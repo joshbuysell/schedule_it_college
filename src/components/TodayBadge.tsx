@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 import { currentPair, kyivNow, type BellDTO, type Week } from "@/lib/schedule";
 
 const DAY_NAMES = ["", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"];
 
-export default function TodayBadge({ bells, parity }: { bells: BellDTO[]; parity: Exclude<Week, "all"> }) {
+export default function TodayBadge({ bells, parity, onBrand }: { bells: BellDTO[]; parity: Exclude<Week, "all">; onBrand?: boolean }) {
   const [now, setNow] = useState<ReturnType<typeof kyivNow> | null>(null);
   useEffect(() => {
     const tick = () => setNow(kyivNow());
@@ -20,15 +21,15 @@ export default function TodayBadge({ bells, parity }: { bells: BellDTO[]; parity
 
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5">
+      <span className={clsx("rounded-full px-3 py-1.5", onBrand ? "bg-white/15" : "border border-line bg-surface")}>
         {now ? `${DAY_NAMES[now.weekday]}, ${date}` : " "}
       </span>
-      <span className="rounded-full bg-brand px-3 py-1.5 text-brand-ink">
+      <span className={clsx("rounded-full px-3 py-1.5", onBrand ? "bg-white text-brand" : "bg-brand text-brand-ink")}>
         {parity === "num" ? "Чисельник" : "Знаменник"}
       </span>
       {cur && bell && (
-        <span className="flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 text-accent">
-          {cur.live && <span className="live-dot size-2 rounded-full bg-accent" />}
+        <span className={clsx("flex items-center gap-2 rounded-full px-3 py-1.5", onBrand ? "bg-accent text-white" : "bg-accent-soft text-accent")}>
+          {cur.live && <span className={clsx("live-dot size-2 rounded-full", onBrand ? "bg-white" : "bg-accent")} />}
           {cur.live ? "Зараз" : "Далі"} {cur.pair} пара · {bell.start}–{bell.end}
         </span>
       )}

@@ -14,6 +14,7 @@ export default function SiteFooter({ source }: { source?: string }) {
               Офіційний PDF
             </a>
           )}
+          <Link href="/integration" className="hover:text-ink">Для сайту коледжу</Link>
           <Link href="/api/v1" className="hover:text-ink">API</Link>
           <Link href="/admin" className="hover:text-ink">Для навчальної частини</Link>
         </div>

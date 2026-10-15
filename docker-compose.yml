@@ -1,0 +1,15 @@
+services:
+  rozklad:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:?задайте AUTH_SECRET у .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@itcollege.lviv.ua}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?задайте ADMIN_PASSWORD у .env}
+      PUBLIC_URL: ${PUBLIC_URL:-}
+    volumes:
+      - rozklad-data:/data
+volumes:
+  rozklad-data:

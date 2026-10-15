@@ -10,7 +10,8 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "plugin:zip": "cd wordpress-plugin && rm -f ../public/downloads/itcollege-rozklad.zip && zip -qr ../public/downloads/itcollege-rozklad.zip itcollege-rozklad"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

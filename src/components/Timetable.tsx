@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { Coffee } from "lucide-react";
@@ -17,6 +17,28 @@ import {
 } from "@/lib/schedule";
 
 type Mode = "group" | "teacher" | "room";
+
+export type OpenTarget = { kind: Mode; key: string };
+
+/** У віджеті для сайту коледжу посилання не ведуть на інші сторінки, а перемикають вигляд. */
+export const TimetableNav = createContext<((t: OpenTarget) => void) | null>(null);
+
+function NavLink({ to, className, title, children }: { to: OpenTarget; className?: string; title?: string; children: React.ReactNode }) {
+  const open = useContext(TimetableNav);
+  if (open) {
+    return (
+      <button type="button" onClick={() => open(to)} className={clsx(className, "cursor-pointer text-left")} title={title}>
+        {children}
+      </button>
+    );
+  }
+  const href = to.kind === "teacher" ? `/teacher/${to.key}` : `/${to.kind}/${encodeURIComponent(to.key)}`;
+  return (
+    <Link href={href} className={className} title={title}>
+      {children}
+    </Link>
+  );
+}
 
 type Props = {
   lessons: LessonDTO[];
@@ -86,7 +108,7 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
   const isNext = (d: number, p: number) => !!live && !live.live && now!.weekday === d && live.pair === p;
 
   return (
-    <div>
+    <div className="@container">
       {/* Панель фільтрів */}
       <div className="no-print mb-4 flex flex-wrap items-center gap-2">
         {hasAlternating && (
@@ -114,7 +136,7 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
       </div>
 
       {/* Мобільний: день за днем */}
-      <div className={clsx(!compact && "md:hidden")}>
+      <div className={clsx(!compact && "@3xl:hidden")}>
         <div className="no-print mb-3 grid grid-cols-5 gap-1.5">
           {DAYS_SHORT.map((d, i) => {
             const count = visible.filter((l) => l.day === i + 1).length;
@@ -142,7 +164,7 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
 
       {/* Десктоп: тижнева сітка */}
       {!compact && (
-        <div className="hidden overflow-hidden rounded-2xl border border-line bg-surface shadow-card md:block">
+        <div className="hidden overflow-hidden rounded-2xl border border-line bg-surface shadow-card @3xl:block">
           <div className="grid" style={{ gridTemplateColumns: "88px repeat(5, minmax(0, 1fr))" }}>
             <div className="border-b border-line bg-surface-2" />
             {DAYS.map((d, i) => {
@@ -156,7 +178,7 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
                   )}
                 >
                   {d}
-                  {today && <span className="ml-2 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-ink">сьогодні</span>}
+                  {today && <span className="ml-2 hidden rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-ink @5xl:inline">сьогодні</span>}
                 </div>
               );
             })}
@@ -294,26 +316,31 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
     >
       <div className="flex items-start justify-between gap-2">
         <p className={clsx("font-bold leading-snug", large ? "text-[15px]" : "text-[13px]")}>{l.subject}</p>
-        {l.room && mode !== "room" && (
-          <Link
-            href={`/room/${encodeURIComponent(l.room)}`}
+        {l.room && mode !== "room" && large && (
+          <NavLink
+            to={{ kind: "room", key: l.room }}
             className="shrink-0 rounded-md bg-white/60 px-1.5 py-0.5 text-[11px] font-bold tabular-nums ring-1 ring-black/5 hover:bg-white dark:bg-black/25 dark:ring-white/10"
             title="Аудиторія"
           >
             {l.room}
-          </Link>
+          </NavLink>
         )}
       </div>
       <div className={clsx("mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 opacity-85", large ? "text-[13px]" : "text-[12px]")}>
+        {l.room && mode !== "room" && !large && (
+          <NavLink to={{ kind: "room", key: l.room }} className="rounded bg-white/60 px-1 font-bold tabular-nums ring-1 ring-black/5 hover:bg-white dark:bg-black/25 dark:ring-white/10" title="Аудиторія">
+            {l.room === "кфв" ? "кфв" : `ауд. ${l.room}`}
+          </NavLink>
+        )}
         {mode !== "teacher" && l.teacher && l.teacherId && (
-          <Link href={`/teacher/${l.teacherId}`} className={linkCls}>
+          <NavLink to={{ kind: "teacher", key: String(l.teacherId) }} className={linkCls}>
             {l.teacher}
-          </Link>
+          </NavLink>
         )}
         {mode !== "group" && (
-          <Link href={`/group/${encodeURIComponent(l.group)}`} className={clsx(linkCls, "font-semibold")}>
+          <NavLink to={{ kind: "group", key: l.group }} className={clsx(linkCls, "font-semibold")}>
             {l.group}
-          </Link>
+          </NavLink>
         )}
         {(l.week !== "all" || l.subgroup > 0) && (
           <span className="flex gap-1">
@@ -344,14 +371,14 @@ export function Segmented({
   options: { value: string; label: string; badge?: string }[];
 }) {
   return (
-    <div className="inline-flex rounded-xl border border-line bg-surface p-1 shadow-card">
+    <div className="inline-flex max-w-full overflow-x-auto rounded-xl border border-line bg-surface p-1 shadow-card">
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           className={clsx(
-            "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition",
+            "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold whitespace-nowrap transition sm:px-3",
             value === o.value ? "bg-ink text-bg" : "text-ink-2 hover:text-ink",
           )}
         >
