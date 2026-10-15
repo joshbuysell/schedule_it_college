@@ -1,0 +1,89 @@
+import "server-only";
+import { prisma } from "./db";
+import { kyivNow, weekParity, type BellDTO, type LessonDTO, type Week } from "./schedule";
+import type { Prisma } from "@prisma/client";
+
+const lessonInclude = {
+  subject: true,
+  teacher: true,
+  room: true,
+  group: true,
+} satisfies Prisma.LessonInclude;
+
+type LessonRow = Prisma.LessonGetPayload<{ include: typeof lessonInclude }>;
+
+export function toDTO(l: LessonRow): LessonDTO {
+  return {
+    id: l.id,
+    day: l.day,
+    pair: l.pair,
+    week: l.week as Week,
+    subgroup: l.subgroup,
+    subject: l.subject.name,
+    subjectId: l.subjectId,
+    teacher: l.teacher?.shortName ?? null,
+    teacherId: l.teacherId,
+    room: l.room?.name ?? null,
+    roomId: l.roomId,
+    group: l.group.name,
+    groupId: l.groupId,
+  };
+}
+
+const order = [{ day: "asc" }, { pair: "asc" }, { week: "asc" }, { subgroup: "asc" }] as const;
+
+export async function lessonsWhere(where: Prisma.LessonWhereInput): Promise<LessonDTO[]> {
+  const rows = await prisma.lesson.findMany({ where, include: lessonInclude, orderBy: [...order] });
+  return rows.map(toDTO);
+}
+
+export async function getBells(): Promise<BellDTO[]> {
+  return prisma.bell.findMany({ orderBy: { pair: "asc" } });
+}
+
+export async function getSettings() {
+  const rows = await prisma.setting.findMany();
+  const s = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  return {
+    semesterLabel: s.semesterLabel ?? "",
+    numeratorAnchor: s.numeratorAnchor ?? "2026-09-07",
+    semesterEnd: s.semesterEnd ?? "2026-12-25",
+    source: s.source ?? "",
+  };
+}
+
+/** Контекст «сьогодні»: день тижня, чисельник/знаменник — на боці сервера, у київському часі. */
+export async function getToday() {
+  const [settings, bells] = await Promise.all([getSettings(), getBells()]);
+  const now = kyivNow();
+  return {
+    ...now,
+    parity: weekParity(settings.numeratorAnchor, now.ymd, now.weekday),
+    settings,
+    bells,
+  };
+}
+
+export async function getGroupsByCourse() {
+  const groups = await prisma.group.findMany({
+    orderBy: [{ course: "asc" }, { name: "asc" }],
+    include: { _count: { select: { lessons: true } } },
+  });
+  const byCourse = new Map<number, typeof groups>();
+  for (const g of groups) byCourse.set(g.course, [...(byCourse.get(g.course) ?? []), g]);
+  return byCourse;
+}
+
+export async function getSearchIndex() {
+  const [groups, teachers, rooms] = await Promise.all([
+    prisma.group.findMany({ select: { name: true, specialty: true, course: true }, orderBy: { name: "asc" } }),
+    prisma.teacher.findMany({
+      select: { id: true, shortName: true, fullName: true, commission: true },
+      orderBy: { shortName: "asc" },
+    }),
+    prisma.room.findMany({ select: { name: true }, orderBy: { name: "asc" } }),
+  ]);
+  return { groups, teachers, rooms };
+}
+
+export type SearchIndex = Awaited<ReturnType<typeof getSearchIndex>>;

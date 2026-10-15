@@ -1,0 +1,49 @@
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import ScheduleShell from "@/components/ScheduleShell";
+import Timetable from "@/components/Timetable";
+import { prisma } from "@/lib/db";
+import { getToday, lessonsWhere } from "@/lib/queries";
+
+export const dynamic = "force-dynamic";
+
+type Props = { params: Promise<{ id: string }> };
+
+async function load(id: string) {
+  const n = Number(id);
+  return Number.isInteger(n) ? prisma.teacher.findUnique({ where: { id: n } }) : null;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const t = await load((await params).id);
+  return { title: t ? t.fullName ?? t.shortName : "Викладач" };
+}
+
+export default async function TeacherPage({ params }: Props) {
+  const teacher = await load((await params).id);
+  if (!teacher) notFound();
+
+  const [lessons, today] = await Promise.all([lessonsWhere({ teacherId: teacher.id }), getToday()]);
+  const groups = [...new Set(lessons.map((l) => l.group))].sort((a, b) => a.localeCompare(b, "uk"));
+  // навантаження: щотижневі пари = 1, чисельник/знаменник = 0.5
+  const load_ = lessons.reduce((s, l) => s + (l.week === "all" ? 1 : 0.5), 0);
+
+  return (
+    <ScheduleShell
+      eyebrow={teacher.commission ? `Циклова комісія ${teacher.commission.toLowerCase()}` : "Викладач"}
+      title={teacher.fullName ?? teacher.shortName}
+      subtitle={[teacher.degree, teacher.fullName ? teacher.shortName : null].filter(Boolean).join(" · ") || undefined}
+      stats={[
+        { label: "пар на тиждень (у середньому)", value: load_ },
+        { label: "груп", value: groups.length },
+      ]}
+    >
+      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="teacher" />
+      {groups.length > 0 && (
+        <p className="mt-6 text-sm text-ink-3">
+          Групи: <span className="font-semibold text-ink-2">{groups.join(", ")}</span>
+        </p>
+      )}
+    </ScheduleShell>
+  );
+}

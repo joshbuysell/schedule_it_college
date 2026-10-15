@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Group {
+  id         Int        @id @default(autoincrement())
+  name       String     @unique
+  course     Int
+  specialty  String
+  lessons    Lesson[]
+  practices  Practice[]
+  updatedAt  DateTime   @updatedAt
+}
+
+model Teacher {
+  id         Int      @id @default(autoincrement())
+  shortName  String   @unique
+  fullName   String?
+  commission String?
+  degree     String?
+  lessons    Lesson[]
+}
+
+model Subject {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  lessons Lesson[]
+}
+
+model Room {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  // shared rooms (sports complex) are excluded from conflict checks
+  shared  Boolean  @default(false)
+  lessons Lesson[]
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  day       Int // 1 = Monday .. 5 = Friday
+  pair      Int // 1..6
+  week      String   @default("all") // all | num (чисельник) | den (знаменник)
+  subgroup  Int      @default(0) // 0 = whole group, 1 | 2
+  subjectId Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  teacherId Int?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  roomId    Int?
+  room      Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  updatedAt DateTime @updatedAt
+
+  @@index([groupId, day, pair])
+  @@index([teacherId])
+  @@index([roomId])
+}
+
+model Practice {
+  id       Int    @id @default(autoincrement())
+  groupId  Int
+  group    Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title    String
+  dates    String // "25.05-14.06"
+  teachers String
+}
+
+model Bell {
+  pair  Int    @id
+  start String
+  end   String
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model User {
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  name         String
+  passwordHash String
+  role         String @default("editor") // admin | editor
+}

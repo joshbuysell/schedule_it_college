@@ -1,26 +1,139 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --bg: #f5f4ef;
+  --surface: #ffffff;
+  --surface-2: #faf9f6;
+  --ink: #14161f;
+  --ink-2: #4a4f5e;
+  --ink-3: #8a8f9c;
+  --line: #e6e3da;
+  --line-2: #efede6;
+  --brand: #2350c8;
+  --brand-ink: #ffffff;
+  --brand-soft: #e8ecff;
+  --accent: #ff6a3d;
+  --accent-soft: #fff0ea;
+  --ok: #138a5a;
+  --warn: #c2410c;
+  --danger: #d12b3a;
+  --danger-soft: #fdecee;
+  --shadow: 0 1px 2px rgba(20, 22, 31, 0.04), 0 8px 24px -12px rgba(20, 22, 31, 0.12);
+  --lesson-l: 0.955;
+  --lesson-c: 0.035;
+  --lesson-ink-l: 0.38;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not(.light) {
+    --bg: #0e1016;
+    --surface: #161922;
+    --surface-2: #1b1f2a;
+    --ink: #eef0f6;
+    --ink-2: #b4b9c7;
+    --ink-3: #7c8293;
+    --line: #262b37;
+    --line-2: #1f2430;
+    --brand: #6f86ff;
+    --brand-ink: #0b0d14;
+    --brand-soft: #1c2342;
+    --accent: #ff7d55;
+    --accent-soft: #2e1a14;
+    --ok: #3ccf8e;
+    --warn: #fb923c;
+    --danger: #ff5d6c;
+    --danger-soft: #34171b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    --lesson-l: 0.27;
+    --lesson-c: 0.045;
+    --lesson-ink-l: 0.86;
+    color-scheme: dark;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-unbounded), var(--font-manrope), sans-serif;
+  --shadow-card: var(--shadow);
+}
+
+html {
+  background: var(--bg);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "tnum";
+}
+
+::selection {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+
+/* Картка заняття: колір обчислюється з відтінку дисципліни (--h) */
+.lesson {
+  background: oklch(var(--lesson-l) var(--lesson-c) var(--h));
+  color: oklch(var(--lesson-ink-l) 0.09 var(--h));
+  border-left: 3px solid oklch(0.62 0.14 var(--h));
+}
+.lesson-dot {
+  background: oklch(0.62 0.14 var(--h));
+}
+
+.grid-paper {
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 55%, transparent); }
+  100% { box-shadow: 0 0 0 8px transparent; }
+}
+.live-dot {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.drawer-in {
+  animation: slide-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes fade-up {
+  from { transform: translateY(6px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.fade-up {
+  animation: fade-up 0.3s ease-out both;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
 }

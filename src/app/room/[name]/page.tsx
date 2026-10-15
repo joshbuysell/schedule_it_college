@@ -1,0 +1,36 @@
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import ScheduleShell from "@/components/ScheduleShell";
+import Timetable from "@/components/Timetable";
+import { prisma } from "@/lib/db";
+import { getToday, lessonsWhere } from "@/lib/queries";
+
+export const dynamic = "force-dynamic";
+
+type Props = { params: Promise<{ name: string }> };
+
+const roomTitle = (name: string) => (name === "кфв" ? "Спорткомплекс" : `Аудиторія ${name}`);
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return { title: roomTitle(decodeURIComponent((await params).name)) };
+}
+
+export default async function RoomPage({ params }: Props) {
+  const name = decodeURIComponent((await params).name);
+  const room = await prisma.room.findUnique({ where: { name } });
+  if (!room) notFound();
+
+  const [lessons, today] = await Promise.all([lessonsWhere({ roomId: room.id }), getToday()]);
+  const busy = new Set(lessons.map((l) => `${l.day}.${l.pair}`)).size;
+  const total = 5 * today.bells.filter((b) => b.pair <= 5).length;
+
+  return (
+    <ScheduleShell
+      eyebrow={room.name.endsWith("л") ? "Лабораторія" : "Аудиторія"}
+      title={roomTitle(room.name)}
+      stats={[{ label: `зайнятість (${busy} з ${total} пар)`, value: `${Math.round((busy / total) * 100)}%` }]}
+    >
+      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="room" />
+    </ScheduleShell>
+  );
+}

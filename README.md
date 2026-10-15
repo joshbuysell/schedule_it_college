@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Розклад ІТ коледжу Львівської політехніки
 
-## Getting Started
+Вебсистема розкладу занять для [Фахового коледжу інформаційних технологій НУ «Львівська політехніка»](https://itcollege.lviv.ua).
+Замінює скановані PDF-роздруківки зручним розкладом для студентів і редактором для навчальної частини.
 
-First, run the development server:
+## Можливості
+
+**Для студентів і викладачів**
+- Миттєвий пошук групи, викладача чи аудиторії (працює навіть у неправильній розкладці: `rs21` → `кі21`, і транслітом).
+- Тижнева сітка на компʼютері, «день за днем» на телефоні.
+- Автоматичне визначення чисельника/знаменника, підсвічування поточної та наступної пари.
+- Фільтр підгруп (запамʼятовується), «Моя група» з сьогоднішніми парами на головній.
+- Розклад викладача та зайнятість аудиторії.
+- Експорт у Google / Apple Календар (`.ics` з урахуванням чисельника/знаменника), друк.
+- Темна тема автоматично.
+
+**Для навчальної частини (`/admin`)**
+- Редактор-сітка: натиснув на клітинку → заповнив пару.
+- Розумні підказки: спершу викладачі, які вже ведуть цю дисципліну; позначки «вільний» / «зайнятий · КІ-12»; так само для аудиторій.
+- Перевірка накладок у реальному часі: викладач, аудиторія чи група в один час (з урахуванням чисельника/знаменника та підгруп).
+- Перетягування пар між клітинками (drag & drop), скасування видалення.
+- Огляд із переліком усіх накладок, довідники (викладачі, дисципліни, аудиторії, групи), налаштування дзвінків і семестру.
+
+## Дані
+
+Офіційний розклад на сайті коледжу — це скан-PDF без текстового шару
+([джерело](https://itcollege.lviv.ua/rozklad-2-2025-2026/)). Його 12 сторінок розшифровано в простий текстовий формат
+`prisma/data/rozklad-2025-2026-sem2.txt` (50 груп, 908 занять, 86 викладачів, 55 аудиторій), який імпортує `prisma/seed.ts`.
+Повні імена викладачів і циклові комісії взято зі сторінок циклових комісій через WordPress REST API сайту.
+
+> Після імпорту система виявила 20 накладок аудиторій, які є і в оригінальному PDF (напр. ауд. 404, понеділок, 3 пара — МТ-12 і МТ-230).
+> Варто звірити їх з навчальною частиною: частина може бути помилками розшифровки.
+
+## Запуск
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env          # і замініть AUTH_SECRET та ADMIN_PASSWORD
+npm run db:push               # створює SQLite-базу
+npm run db:seed               # імпорт розкладу та обліковий запис навчальної частини
+npm run dev                   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Вхід у редактор: `/admin`, email і пароль — з `.env` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Інтеграція з сайтом коледжу (WordPress)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Віджет:** вставте на будь-яку сторінку WordPress блок «Власний HTML»:
+  ```html
+  <iframe src="https://<домен-розкладу>/embed/group/КІ-21" width="100%" height="900" style="border:0"></iframe>
+  ```
+- **Публічне API** (`/api/v1`, CORS відкрито): список груп, розклад групи, викладача, пошук. Опис — за адресою `/api/v1`.
+- Коли зʼявиться доступ до сайту/хостингу, можна зробити WordPress-плагін зі шорткодом `[rozklad group="КІ-21"]` поверх цього ж API.
 
-## Learn More
+## Технології
 
-To learn more about Next.js, take a look at the following resources:
+Next.js 15 (App Router, React 19, TypeScript) · Tailwind CSS 4 · Prisma ORM + SQLite (перехід на PostgreSQL — зміна `provider`) · JWT-сесії (`jose`, `bcryptjs`) · Zod.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/app            сторінки (публічні, /admin, /embed) та API (/api/v1 — публічне, /api/admin — під авторизацією)
+src/components     Timetable (сітка/день), Search, «Моя група»
+src/lib            schedule.ts (чисельник/знаменник, кольори, пошук), conflicts.ts (накладки), queries.ts, auth.ts
+prisma             схема БД, імпорт, розшифрований розклад
+```
