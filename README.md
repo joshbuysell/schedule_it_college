@@ -31,12 +31,15 @@
 > Після імпорту система виявила 20 накладок аудиторій, які є і в оригінальному PDF (напр. ауд. 404, понеділок, 3 пара — МТ-12 і МТ-230).
 > Варто звірити їх з навчальною частиною: частина може бути помилками розшифровки.
 
-## Запуск
+## Запуск локально
+
+Потрібні Node.js 20+ і PostgreSQL (на macOS: `brew install postgresql@16 && brew services start postgresql@16`).
 
 ```bash
 npm install
-cp .env.example .env          # і замініть AUTH_SECRET та ADMIN_PASSWORD
-npm run db:push               # створює SQLite-базу
+createdb rozklad
+cp .env.example .env          # вкажіть свого користувача Postgres, AUTH_SECRET і ADMIN_PASSWORD
+npm run db:push               # створює таблиці
 npm run db:seed               # імпорт розкладу та обліковий запис навчальної частини
 npm run dev                   # http://localhost:3000
 ```
@@ -67,18 +70,22 @@ npm run dev                   # http://localhost:3000
 замінено віджетом (не комітиться, лише для перегляду). Запуск: `npx serve -l 5600 demo/college-page` при запущеному
 `npm run dev -- -p 3100`.
 
-## Розміщення на сервері
+## Розміщення онлайн (безкоштовно: Vercel + Neon)
 
-```bash
-cp .env.example .env    # задайте AUTH_SECRET, ADMIN_PASSWORD, PUBLIC_URL
-docker compose up -d --build
-```
-Під час першого запуску створюється база (том `rozklad-data`) і імпортується розклад. Далі за адресою сервера потрібен
-HTTPS (напр. Caddy або Nginx + Let's Encrypt) — сайт коледжу працює через HTTPS, і віджет теж має бути на HTTPS.
+1. [vercel.com](https://vercel.com) → увійти через GitHub → **Add New → Project** → імпортувати цей репозиторій.
+2. **Settings → Environment Variables:** `AUTH_SECRET` (результат `openssl rand -hex 32`), `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+3. **Storage → Create Database → Neon (Postgres)** → підключити до проєкту. Vercel сам додасть `DATABASE_URL` і `DATABASE_URL_UNPOOLED`.
+4. **Deployments → Redeploy.** Під час збірки (`vercel-build`) створюються таблиці, у порожню базу імпортується розклад,
+   а пароль адміністратора береться з `ADMIN_PASSWORD` (змінили змінну → Redeploy → пароль оновлено).
+5. Необовʼязково: `PUBLIC_URL` = адреса сайту (для коду вставки на `/integration`).
+
+Інші варіанти: **Docker** — `docker compose up -d --build` (разом із Postgres); **Heroku** — є `Procfile`
+(додайте Heroku Postgres і змінну `DATABASE_URL_UNPOOLED` з тим самим значенням, що `DATABASE_URL`).
+Сайт коледжу працює через HTTPS, тому і система розкладу має бути на HTTPS (Vercel дає його автоматично).
 
 ## Технології
 
-Next.js 15 (App Router, React 19, TypeScript) · Tailwind CSS 4 · Prisma ORM + SQLite (перехід на PostgreSQL — зміна `provider`) · JWT-сесії (`jose`, `bcryptjs`) · Zod.
+Next.js 15 (App Router, React 19, TypeScript) · Tailwind CSS 4 · Prisma ORM + PostgreSQL · JWT-сесії (`jose`, `bcryptjs`) · Zod.
 
 ```
 src/app            сторінки (публічні, /admin, /embed) та API (/api/v1 — публічне, /api/admin — під авторизацією)

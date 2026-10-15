@@ -9,9 +9,8 @@ RUN npm run build
 
 FROM node:22-alpine
 WORKDIR /app
-ENV NODE_ENV=production PORT=3000 DATABASE_URL="file:/data/rozklad.db"
+ENV NODE_ENV=production PORT=3000
 COPY --from=build /app ./
 RUN chmod +x docker-entrypoint.sh
-VOLUME /data
 EXPOSE 3000
 ENTRYPOINT ["./docker-entrypoint.sh"]

@@ -167,7 +167,20 @@ function groupMeta(name: string) {
   return { course: +m[2], specialty: SPECIALTIES[m[1]] ?? m[1] };
 }
 
-async function main() {
+/** Обліковий запис навчальної частини з ADMIN_EMAIL / ADMIN_PASSWORD (оновлює пароль при кожному запуску). */
+async function ensureAdmin() {
+  const email = (process.env.ADMIN_EMAIL ?? "admin@itcollege.lviv.ua").trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password) return console.warn("ADMIN_PASSWORD не задано — обліковий запис адміністратора не створено");
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.user.upsert({
+    where: { email },
+    update: { passwordHash },
+    create: { email, name: "Навчальна частина", role: "admin", passwordHash },
+  });
+}
+
+async function importSchedule() {
   const text = readFileSync(join(__dirname, "data", "rozklad-2025-2026-sem2.txt"), "utf8");
   const parsed = parseSchedule(text);
 
@@ -178,61 +191,50 @@ async function main() {
   await prisma.subject.deleteMany();
   await prisma.room.deleteMany();
 
-  const teacherIds = new Map<string, number>();
-  const subjectIds = new Map<string, number>();
-  const roomIds = new Map<string, number>();
+  // Довідники — пакетно (швидко навіть для віддаленої бази)
+  const all = parsed.flatMap((g) => g.lessons);
+  const teacherNames = [...new Set(all.map((l) => l.teacher).filter((t): t is string => !!t))];
+  const subjectNames = [...new Set(all.map((l) => l.subject))];
+  const roomNames = [...new Set(all.map((l) => l.room).filter((r): r is string => !!r))];
 
-  const teacherId = async (short: string) => {
-    if (!teacherIds.has(short)) {
+  await prisma.teacher.createMany({
+    data: teacherNames.map((short) => {
       const [fullName, commission] = TEACHERS[short] ?? ["", ""];
-      const t = await prisma.teacher.create({
-        data: {
-          shortName: short,
-          fullName: fullName || null,
-          commission: commission || null,
-          degree: DEGREES[short] ?? null,
-        },
-      });
-      teacherIds.set(short, t.id);
-    }
-    return teacherIds.get(short)!;
-  };
-  const subjectId = async (name: string) => {
-    if (!subjectIds.has(name)) subjectIds.set(name, (await prisma.subject.create({ data: { name } })).id);
-    return subjectIds.get(name)!;
-  };
-  const roomId = async (name: string) => {
-    if (!roomIds.has(name)) {
-      const r = await prisma.room.create({ data: { name, shared: name === "кфв" } });
-      roomIds.set(name, r.id);
-    }
-    return roomIds.get(name)!;
-  };
+      return { shortName: short, fullName: fullName || null, commission: commission || null, degree: DEGREES[short] ?? null };
+    }),
+  });
+  await prisma.subject.createMany({ data: subjectNames.map((name) => ({ name })) });
+  await prisma.room.createMany({ data: roomNames.map((name) => ({ name, shared: name === "кфв" })) });
+  await prisma.group.createMany({ data: parsed.map((g) => ({ name: g.name, ...groupMeta(g.name) })) });
 
-  let lessonCount = 0;
-  for (const g of parsed) {
-    const group = await prisma.group.create({ data: { name: g.name, ...groupMeta(g.name) } });
-    for (const l of g.lessons) {
-      await prisma.lesson.create({
-        data: {
-          groupId: group.id,
-          day: l.day,
-          pair: l.pair,
-          week: l.week,
-          subgroup: l.subgroup,
-          subjectId: await subjectId(l.subject),
-          teacherId: l.teacher ? await teacherId(l.teacher) : null,
-          roomId: l.room ? await roomId(l.room) : null,
-        },
-      });
-      lessonCount++;
-    }
-    for (const p of g.practices) await prisma.practice.create({ data: { groupId: group.id, ...p } });
-  }
+  const ids = async <T extends { id: number }>(rows: T[], key: (r: T) => string) => new Map(rows.map((r) => [key(r), r.id]));
+  const teacherIds = await ids(await prisma.teacher.findMany(), (t) => t.shortName);
+  const subjectIds = await ids(await prisma.subject.findMany(), (t) => t.name);
+  const roomIds = await ids(await prisma.room.findMany(), (t) => t.name);
+  const groupIds = await ids(await prisma.group.findMany(), (t) => t.name);
 
-  for (const [i, [start, end]] of BELLS.entries()) {
-    await prisma.bell.upsert({ where: { pair: i + 1 }, update: { start, end }, create: { pair: i + 1, start, end } });
-  }
+  await prisma.lesson.createMany({
+    data: parsed.flatMap((g) =>
+      g.lessons.map((l) => ({
+        groupId: groupIds.get(g.name)!,
+        day: l.day,
+        pair: l.pair,
+        week: l.week,
+        subgroup: l.subgroup,
+        subjectId: subjectIds.get(l.subject)!,
+        teacherId: l.teacher ? teacherIds.get(l.teacher)! : null,
+        roomId: l.room ? roomIds.get(l.room)! : null,
+      })),
+    ),
+  });
+  await prisma.practice.createMany({
+    data: parsed.flatMap((g) => g.practices.map((p) => ({ groupId: groupIds.get(g.name)!, ...p }))),
+  });
+
+  await prisma.bell.createMany({
+    data: BELLS.map(([start, end], i) => ({ pair: i + 1, start, end })),
+    skipDuplicates: true,
+  });
 
   const settings: Record<string, string> = {
     semesterLabel: "ІІ семестр 2025/2026 н.р.",
@@ -241,24 +243,29 @@ async function main() {
     semesterEnd: "2026-12-25",
     source: "https://itcollege.lviv.ua/rozklad-2-2025-2026/",
   };
-  for (const [key, value] of Object.entries(settings)) {
-    await prisma.setting.upsert({ where: { key }, update: {}, create: { key, value } });
-  }
-
-  const email = process.env.ADMIN_EMAIL ?? "admin@itcollege.lviv.ua";
-  const password = process.env.ADMIN_PASSWORD;
-  if (password) {
-    await prisma.user.upsert({
-      where: { email },
-      update: { passwordHash: await bcrypt.hash(password, 10) },
-      create: { email, name: "Навчальна частина", role: "admin", passwordHash: await bcrypt.hash(password, 10) },
-    });
-  }
+  await prisma.setting.createMany({
+    data: Object.entries(settings).map(([key, value]) => ({ key, value })),
+    skipDuplicates: true,
+  });
 
   console.log(
-    `Імпортовано: ${parsed.length} груп, ${lessonCount} занять, ${teacherIds.size} викладачів, ` +
-      `${subjectIds.size} дисциплін, ${roomIds.size} аудиторій`,
+    `Імпортовано: ${parsed.length} груп, ${all.length} занять, ${teacherNames.length} викладачів, ` +
+      `${subjectNames.length} дисциплін, ${roomNames.length} аудиторій`,
   );
+}
+
+/**
+ * npm run db:seed               — повний імпорт (стирає поточний розклад!)
+ * tsx prisma/seed.ts --if-empty — імпорт лише в порожню базу (використовується під час розгортання)
+ */
+async function main() {
+  const ifEmpty = process.argv.includes("--if-empty");
+  if (ifEmpty && (await prisma.group.count()) > 0) {
+    console.log("База вже містить розклад — імпорт пропущено");
+  } else {
+    await importSchedule();
+  }
+  await ensureAdmin();
 }
 
 if (require.main === module) {

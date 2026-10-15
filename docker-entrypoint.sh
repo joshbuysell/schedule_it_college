@@ -1,10 +1,5 @@
 #!/bin/sh
 set -e
-# Перший запуск: створюємо базу та імпортуємо розклад. Далі дані живуть у томі /data.
-if [ ! -f /data/rozklad.db ]; then
-  npx prisma db push --skip-generate
-  npx tsx prisma/seed.ts
-else
-  npx prisma db push --skip-generate
-fi
+# Схема бази + імпорт розкладу лише в порожню базу; пароль адміністратора — з ADMIN_PASSWORD
+npm run db:deploy
 exec npm start
