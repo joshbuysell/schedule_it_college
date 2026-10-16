@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "./db";
+import { byName } from "./schedule";
 import { SESSION_COOKIE, verifySessionToken } from "./auth";
 
 export async function getSession() {
@@ -33,6 +34,10 @@ export async function getDictionaries() {
     prisma.subject.findMany({ orderBy: { name: "asc" } }),
     prisma.room.findMany({ orderBy: { name: "asc" } }),
   ]);
+  groups.sort((a, b) => a.course - b.course || byName(a.name, b.name));
+  teachers.sort((a, b) => byName(a.shortName, b.shortName));
+  subjects.sort((a, b) => byName(a.name, b.name));
+  rooms.sort((a, b) => byName(a.name, b.name));
   return { groups, teachers, subjects, rooms };
 }
 export type Dictionaries = Awaited<ReturnType<typeof getDictionaries>>;

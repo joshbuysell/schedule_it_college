@@ -23,16 +23,18 @@ export default async function Home() {
     <>
       <SiteHeader search={false} />
       <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-        <section className="grid-paper relative -mx-4 px-4 pb-10 pt-10 sm:-mx-6 sm:px-6 sm:pt-16">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="mb-4 inline-flex rounded-full border border-line bg-surface px-3 py-1 text-xs font-bold uppercase tracking-wider text-ink-2">
+        <section className="relative mt-6 overflow-hidden rounded-3xl bg-gradient-to-b from-brand-soft to-white px-4 pb-12 pt-10 sm:px-6 sm:pt-14">
+          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-brand/[0.06]" />
+          <div aria-hidden className="pointer-events-none absolute -left-16 top-24 size-48 rounded-full bg-accent/[0.07]" />
+          <div className="relative mx-auto max-w-3xl text-center">
+            <p className="mb-4 inline-flex rounded-full bg-brand px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-ink">
               {today.settings.semesterLabel}
             </p>
-            <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-              Розклад занять <span className="text-brand">без фото роздруківок</span>
+            <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-ink sm:text-5xl">
+              Розклад занять <span className="text-brand">ІТ коледжу</span>
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-base text-ink-2 sm:text-lg">
-              Знайдіть свою групу чи викладача за секунду. Працює з телефона, показує поточну пару та чисельник/знаменник.
+              Знайдіть свою групу чи викладача за секунду. Поточна пара, чисельник і знаменник — усе видно одразу, і з телефона теж.
             </p>
             <div className="mt-8">
               <Search index={index} />
@@ -47,8 +49,8 @@ export default async function Home() {
           <MyGroupCard bells={today.bells} parity={today.parity} />
 
           <section>
-            <div className="mb-4 flex items-end justify-between">
-              <h2 className="font-display text-2xl font-bold">Групи</h2>
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <h2 className="section-title flex-1 text-xl font-semibold uppercase tracking-wide"><span>Групи</span></h2>
               <Link href="/groups" className="text-sm font-semibold text-brand hover:underline">
                 Усі групи за спеціальностями
               </Link>
@@ -77,7 +79,7 @@ export default async function Home() {
           </section>
 
           <section className="grid gap-4 lg:grid-cols-3">
-            <div className="rounded-3xl border border-line bg-surface p-6 shadow-card">
+            <div id="bells" className="scroll-mt-20 rounded-3xl border border-line bg-surface p-6 shadow-card">
               <div className="mb-4 flex items-center gap-2">
                 <Bell className="size-5 text-brand" />
                 <h2 className="font-display text-lg font-bold">Розклад дзвінків</h2>
@@ -94,9 +96,9 @@ export default async function Home() {
               </ol>
             </div>
 
-            <div className="flex flex-col justify-between rounded-3xl bg-brand p-6 text-brand-ink shadow-card lg:col-span-2">
+            <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-brand to-brand-deep p-6 text-brand-ink shadow-card lg:col-span-2">
               <div>
-                <h2 className="font-display text-2xl font-bold">Розклад, з яким зручно</h2>
+                <h2 className="text-2xl font-bold">Розклад, з яким зручно</h2>
                 <p className="mt-2 max-w-lg opacity-85">
                   Позначте свою групу зірочкою — і на головній завжди будуть сьогоднішні пари. Додайте розклад у Google
                   Календар одним натиском.

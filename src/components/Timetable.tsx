@@ -319,7 +319,7 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
         {l.room && mode !== "room" && large && (
           <NavLink
             to={{ kind: "room", key: l.room }}
-            className="shrink-0 rounded-md bg-white/60 px-1.5 py-0.5 text-[11px] font-bold tabular-nums ring-1 ring-black/5 hover:bg-white dark:bg-black/25 dark:ring-white/10"
+            className="shrink-0 rounded-md bg-white/60 px-1.5 py-0.5 text-[11px] font-bold tabular-nums ring-1 ring-black/5 hover:bg-white"
             title="Аудиторія"
           >
             {l.room}
@@ -328,7 +328,7 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
       </div>
       <div className={clsx("mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 opacity-85", large ? "text-[13px]" : "text-[12px]")}>
         {l.room && mode !== "room" && !large && (
-          <NavLink to={{ kind: "room", key: l.room }} className="rounded bg-white/60 px-1 font-bold tabular-nums ring-1 ring-black/5 hover:bg-white dark:bg-black/25 dark:ring-white/10" title="Аудиторія">
+          <NavLink to={{ kind: "room", key: l.room }} className="rounded bg-white/60 px-1 font-bold tabular-nums ring-1 ring-black/5 hover:bg-white" title="Аудиторія">
             {l.room === "кфв" ? "кфв" : `ауд. ${l.room}`}
           </NavLink>
         )}
@@ -355,7 +355,7 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
 
 function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded bg-black/[0.06] px-1.5 py-px text-[10px] font-bold uppercase tracking-wide dark:bg-white/10">
+    <span className="rounded bg-black/[0.06] px-1.5 py-px text-[10px] font-bold uppercase tracking-wide">
       {children}
     </span>
   );

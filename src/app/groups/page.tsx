@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { prisma } from "@/lib/db";
+import { byName } from "@/lib/schedule";
 
 export const metadata: Metadata = { title: "Групи" };
 export const dynamic = "force-dynamic";
 
 export default async function GroupsPage() {
   const groups = await prisma.group.findMany({ orderBy: [{ specialty: "asc" }, { course: "asc" }, { name: "asc" }] });
+  groups.sort((a, b) => byName(a.specialty, b.specialty) || a.course - b.course || byName(a.name, b.name));
   const bySpecialty = new Map<string, typeof groups>();
   for (const g of groups) bySpecialty.set(g.specialty, [...(bySpecialty.get(g.specialty) ?? []), g]);
 

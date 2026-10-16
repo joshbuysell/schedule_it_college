@@ -130,3 +130,6 @@ export function translit(q: string) {
   for (const [k, v] of Object.entries(map)) s = s.split(k).join(v);
   return s;
 }
+
+/** Природне сортування назв (КІ-2 < КІ-11) незалежно від налаштувань бази даних. */
+export const byName = (a: string, b: string) => a.localeCompare(b, "uk", { numeric: true });

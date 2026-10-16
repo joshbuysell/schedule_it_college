@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
 import { prisma } from "@/lib/db";
 import { getSearchIndex, getToday, lessonsWhere } from "@/lib/queries";
 import { decodeSelection } from "@/lib/selection";
 import type { LessonDTO } from "@/lib/schedule";
 import EmbedApp from "./EmbedApp";
-
-const poppins = Poppins({ variable: "--font-poppins", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = { title: "Розклад занять", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -32,7 +29,7 @@ export default async function EmbedPage({ searchParams }: { searchParams: Promis
   }
 
   return (
-    <div className={`${poppins.variable} theme-college`}>
+    <div className="theme-college">
       <EmbedApp
         index={index}
         bells={today.bells}

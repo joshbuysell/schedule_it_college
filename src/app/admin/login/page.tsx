@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Вхід для навчальної
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
   return (
-    <main className="grid-paper grid min-h-dvh place-items-center px-4">
+    <main className="grid min-h-dvh place-items-center bg-gradient-to-br from-brand to-brand-deep px-4">
       <div className="w-full max-w-sm rounded-3xl border border-line bg-surface p-8 shadow-card">
         <Image src="/logo-lit.jpg" alt="" width={56} height={56} className="mb-5 rounded-full" />
         <h1 className="font-display text-2xl font-bold">Редактор розкладу</h1>

@@ -25,7 +25,7 @@
 
 Офіційний розклад на сайті коледжу — це скан-PDF без текстового шару
 ([джерело](https://itcollege.lviv.ua/rozklad-2-2025-2026/)). Його 12 сторінок розшифровано в простий текстовий формат
-`prisma/data/rozklad-2025-2026-sem2.txt` (50 груп, 908 занять, 86 викладачів, 55 аудиторій), який імпортує `prisma/seed.ts`.
+`prisma/data/schedule-2025-2026-sem2.txt` (50 груп, 908 занять, 86 викладачів, 55 аудиторій), який імпортує `prisma/seed.ts`.
 Повні імена викладачів і циклові комісії взято зі сторінок циклових комісій через WordPress REST API сайту.
 
 > Після імпорту система виявила 20 накладок аудиторій, які є і в оригінальному PDF (напр. ауд. 404, понеділок, 3 пара — МТ-12 і МТ-230).
@@ -37,7 +37,7 @@
 
 ```bash
 npm install
-createdb rozklad
+createdb schedule
 cp .env.example .env          # вкажіть свого користувача Postgres, AUTH_SECRET і ADMIN_PASSWORD
 npm run db:push               # створює таблиці
 npm run db:seed               # імпорт розкладу та обліковий запис навчальної частини
@@ -53,16 +53,16 @@ npm run dev                   # http://localhost:3000
 
 **Варіант 1 — блок «Власний HTML»** (достатньо прав редактора WordPress):
 ```html
-<div id="itc-rozklad"></div>
+<div id="itc-schedule"></div>
 <script src="https://<адреса-розкладу>/embed.js" async></script>
 ```
 `embed.js` створює iframe з `/embed`, сам підлаштовує висоту і записує вибрану групу в адресу сторінки
-(`…/rozklad-2-2025-2026/#rozklad=g:КІ-21`), тож посиланням на розклад групи можна ділитися.
-Для однієї групи: `<div id="itc-rozklad" data-group="КІ-21"></div>`.
+(`…/rozklad-2-2025-2026/#schedule=g:КІ-21`), тож посиланням на розклад групи можна ділитися.
+Для однієї групи: `<div id="itc-schedule" data-group="КІ-21"></div>`.
 
-**Варіант 2 — плагін** (потрібні права адміністратора): `wordpress-plugin/itcollege-rozklad`
-(архів для встановлення — `public/downloads/itcollege-rozklad.zip`, перезбирається `npm run plugin:zip`).
-Додає шорткод `[itcollege_rozklad]` / `[itcollege_rozklad group="КІ-21"]` і сторінку налаштувань з адресою системи.
+**Варіант 2 — плагін** (потрібні права адміністратора): `wordpress-plugin/itcollege-schedule`
+(архів для встановлення — `public/downloads/itcollege-schedule.zip`, перезбирається `npm run plugin:zip`).
+Додає шорткод `[itcollege_schedule]` / `[itcollege_schedule group="КІ-21"]` і сторінку налаштувань з адресою системи.
 
 **Публічне API** (`/api/v1`, CORS відкрито): групи, розклад групи / викладача / аудиторії, пошук, `.ics`.
 

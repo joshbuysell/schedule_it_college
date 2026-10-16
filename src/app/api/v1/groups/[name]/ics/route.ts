@@ -25,7 +25,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ name: s
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//IT College Lviv Polytechnic//Rozklad//UK",
+    "PRODID:-//IT College Lviv Polytechnic//Schedule//UK",
     "CALSCALE:GREGORIAN",
     `X-WR-CALNAME:Розклад ${esc(group.name)}`,
     "X-WR-TIMEZONE:Europe/Kyiv",
@@ -40,7 +40,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ name: s
     const tags = [l.week === "num" ? "чисельник" : l.week === "den" ? "знаменник" : "", l.subgroup ? `${l.subgroup} підгрупа` : ""].filter(Boolean);
     lines.push(
       "BEGIN:VEVENT",
-      `UID:lesson-${l.id}@rozklad.itcollege`,
+      `UID:lesson-${l.id}@schedule.itcollege`,
       `DTSTAMP:${stamp}`,
       `DTSTART;TZID=Europe/Kyiv:${date}T${time(bell.start)}`,
       `DTEND;TZID=Europe/Kyiv:${date}T${time(bell.end)}`,
@@ -70,7 +70,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ name: s
   return new Response(lines.map(fold).join("\r\n") + "\r\n", {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`rozklad-${group.name}.ics`)}`,
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`schedule-${group.name}.ics`)}`,
     },
   });
 }

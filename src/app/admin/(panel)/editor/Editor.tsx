@@ -175,7 +175,7 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
       </aside>
 
       {/* Сітка */}
-      <section className="min-w-0 flex-1 overflow-auto bg-bg">
+      <section className="min-w-0 flex-1 overflow-auto bg-surface-2">
         <div className="mx-auto max-w-[1400px] p-4 sm:p-6">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -402,5 +402,5 @@ function Row({ children }: { children: React.ReactNode }) {
 }
 
 function Badge({ children }: { children: React.ReactNode }) {
-  return <span className="rounded bg-black/[0.07] px-1 text-[9.5px] font-bold uppercase dark:bg-white/10">{children}</span>;
+  return <span className="rounded bg-black/[0.07] px-1 text-[9.5px] font-bold uppercase">{children}</span>;
 }

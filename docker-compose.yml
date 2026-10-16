@@ -3,17 +3,17 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: rozklad
-      POSTGRES_PASSWORD: rozklad
-      POSTGRES_DB: rozklad
+      POSTGRES_USER: schedule
+      POSTGRES_PASSWORD: schedule
+      POSTGRES_DB: schedule
     volumes:
-      - rozklad-db:/var/lib/postgresql/data
+      - schedule-db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "rozklad"]
+      test: ["CMD", "pg_isready", "-U", "schedule"]
       interval: 5s
       retries: 10
 
-  rozklad:
+  schedule:
     build: .
     restart: unless-stopped
     depends_on:
@@ -22,12 +22,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://rozklad:rozklad@db:5432/rozklad
-      DATABASE_URL_UNPOOLED: postgresql://rozklad:rozklad@db:5432/rozklad
+      DATABASE_URL: postgresql://schedule:schedule@db:5432/schedule
+      DATABASE_URL_UNPOOLED: postgresql://schedule:schedule@db:5432/schedule
       AUTH_SECRET: ${AUTH_SECRET:?задайте AUTH_SECRET у .env}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@itcollege.lviv.ua}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?задайте ADMIN_PASSWORD у .env}
       PUBLIC_URL: ${PUBLIC_URL:-}
 
 volumes:
-  rozklad-db:
+  schedule-db:

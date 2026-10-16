@@ -24,7 +24,7 @@ export default function AdminNav() {
             href={href}
             className={clsx(
               "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold whitespace-nowrap",
-              active ? "bg-brand-soft text-brand" : "text-ink-2 hover:bg-surface-2 hover:text-ink",
+              active ? "bg-white text-brand" : "text-white/80 hover:bg-white/10 hover:text-white",
             )}
           >
             <Icon className="size-4" /> <span className="hidden sm:inline">{label}</span>

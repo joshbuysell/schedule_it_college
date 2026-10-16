@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "./db";
-import { kyivNow, weekParity, type BellDTO, type LessonDTO, type Week } from "./schedule";
+import { byName, kyivNow, weekParity, type BellDTO, type LessonDTO, type Week } from "./schedule";
 import type { Prisma } from "@prisma/client";
 
 const lessonInclude = {
@@ -69,6 +69,7 @@ export async function getGroupsByCourse() {
     orderBy: [{ course: "asc" }, { name: "asc" }],
     include: { _count: { select: { lessons: true } } },
   });
+  groups.sort((a, b) => a.course - b.course || byName(a.name, b.name));
   const byCourse = new Map<number, typeof groups>();
   for (const g of groups) byCourse.set(g.course, [...(byCourse.get(g.course) ?? []), g]);
   return byCourse;
@@ -83,6 +84,9 @@ export async function getSearchIndex() {
     }),
     prisma.room.findMany({ select: { name: true }, orderBy: { name: "asc" } }),
   ]);
+  groups.sort((a, b) => byName(a.name, b.name));
+  teachers.sort((a, b) => byName(a.shortName, b.shortName));
+  rooms.sort((a, b) => byName(a.name, b.name));
   return { groups, teachers, rooms };
 }
 

@@ -14,5 +14,5 @@ export default function EmbedPreview() {
     host.after(s);
     return () => s.remove();
   }, []);
-  return <div ref={ref} id="itc-rozklad" />;
+  return <div ref={ref} id="itc-schedule" />;
 }

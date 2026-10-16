@@ -1,5 +1,5 @@
 {
-  "name": "itcollege-rozklad",
+  "name": "schedule-it-college",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "plugin:zip": "cd wordpress-plugin && rm -f ../public/downloads/itcollege-rozklad.zip && zip -qr ../public/downloads/itcollege-rozklad.zip itcollege-rozklad",
+    "plugin:zip": "cd wordpress-plugin && rm -f ../public/downloads/itcollege-schedule.zip && zip -qr ../public/downloads/itcollege-schedule.zip itcollege-schedule",
     "db:deploy": "prisma db push --skip-generate && tsx prisma/seed.ts --if-empty",
     "vercel-build": "prisma generate && npm run db:deploy && next build"
   },

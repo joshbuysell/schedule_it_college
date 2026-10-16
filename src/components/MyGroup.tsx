@@ -6,7 +6,7 @@ import { ArrowRight, Star } from "lucide-react";
 import clsx from "clsx";
 import { currentPair, kyivNow, matchesWeek, subjectHue, type BellDTO, type LessonDTO, type Week } from "@/lib/schedule";
 
-export const MY_GROUP_KEY = "rozklad:my-group";
+export const MY_GROUP_KEY = "schedule:my-group";
 
 /** Кнопка «Моя група» на сторінці групи */
 export function PinGroupButton({ group }: { group: string }) {

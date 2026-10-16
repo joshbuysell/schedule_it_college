@@ -1,57 +1,30 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 :root {
-  --bg: #f5f4ef;
+  /* Палітра сайту itcollege.lviv.ua: фірмовий синій #323a8d, білий фон */
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #faf9f6;
-  --ink: #14161f;
-  --ink-2: #4a4f5e;
-  --ink-3: #8a8f9c;
-  --line: #e6e3da;
-  --line-2: #efede6;
-  --brand: #2350c8;
+  --surface-2: #f5f6fb;
+  --ink: #1c1f3d;
+  --ink-2: #4b5070;
+  --ink-3: #8b90a8;
+  --line: #e2e4ef;
+  --line-2: #eef0f7;
+  --brand: #323a8d;
+  --brand-deep: #252b6b;
   --brand-ink: #ffffff;
-  --brand-soft: #e8ecff;
-  --accent: #ff6a3d;
-  --accent-soft: #fff0ea;
+  --brand-soft: #eceefa;
+  --accent: #f26b1d;
+  --accent-soft: #fff1e7;
   --ok: #138a5a;
   --warn: #c2410c;
   --danger: #d12b3a;
   --danger-soft: #fdecee;
-  --shadow: 0 1px 2px rgba(20, 22, 31, 0.04), 0 8px 24px -12px rgba(20, 22, 31, 0.12);
-  --lesson-l: 0.955;
+  --shadow: 0 1px 2px rgba(28, 31, 61, 0.04), 0 10px 28px -16px rgba(50, 58, 141, 0.28);
+  --lesson-l: 0.958;
   --lesson-c: 0.035;
-  --lesson-ink-l: 0.38;
+  --lesson-ink-l: 0.37;
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --bg: #0e1016;
-    --surface: #161922;
-    --surface-2: #1b1f2a;
-    --ink: #eef0f6;
-    --ink-2: #b4b9c7;
-    --ink-3: #7c8293;
-    --line: #262b37;
-    --line-2: #1f2430;
-    --brand: #6f86ff;
-    --brand-ink: #0b0d14;
-    --brand-soft: #1c2342;
-    --accent: #ff7d55;
-    --accent-soft: #2e1a14;
-    --ok: #3ccf8e;
-    --warn: #fb923c;
-    --danger: #ff5d6c;
-    --danger-soft: #34171b;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-    --lesson-l: 0.27;
-    --lesson-c: 0.045;
-    --lesson-ink-l: 0.86;
-    color-scheme: dark;
-  }
 }
 
 @theme inline {
@@ -64,6 +37,7 @@
   --color-line: var(--line);
   --color-line-2: var(--line-2);
   --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
   --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
   --color-accent: var(--accent);
@@ -72,8 +46,9 @@
   --color-warn: var(--warn);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-unbounded), var(--font-manrope), sans-serif;
+  /* Poppins (як на сайті коледжу) для латиниці й цифр, Montserrat — для кирилиці */
+  --font-sans: var(--font-poppins), var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), var(--font-montserrat), sans-serif;
   --shadow-card: var(--shadow);
 }
 
@@ -86,7 +61,6 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: "ss01", "tnum";
 }
 
 ::selection {
@@ -138,39 +112,28 @@ body {
   body { background: white; }
 }
 
-/* Тема віджета для сайту коледжу: завжди світла, кольори та шрифт itcollege.lviv.ua */
-.theme-college {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --surface-2: #f6f7fb;
-  --ink: #1d2040;
-  --ink-2: #4a4f6a;
-  --ink-3: #8a8fa6;
-  --line: #e3e5ef;
-  --line-2: #eef0f6;
-  --brand: #323a8d;
-  --brand-ink: #ffffff;
-  --brand-soft: #eceefb;
-  --accent: #ff6900;
-  --accent-soft: #fff1e6;
-  --ok: #138a5a;
-  --danger: #d12b3a;
-  --danger-soft: #fdecee;
-  --shadow: 0 1px 2px rgba(29, 32, 64, 0.04), 0 6px 20px -12px rgba(29, 32, 64, 0.18);
-  --lesson-l: 0.955;
-  --lesson-c: 0.035;
-  --lesson-ink-l: 0.38;
-  color-scheme: light;
-  background: var(--bg);
-  color: var(--ink);
-  /* Poppins не має кирилиці — як і на сайті коледжу, кирилиця йде системним шрифтом */
-  font-family: var(--font-poppins), "Helvetica Neue", Arial, sans-serif;
-}
-.theme-college .font-display {
-  font-family: var(--font-poppins), "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.01em;
-}
+/* Віджет на сайті коледжу: прозорий фон, щоб зливатися зі сторінкою */
 html:has(.theme-college),
 body:has(.theme-college) {
   background: transparent;
+}
+
+/* Заголовок секції в стилі віджетів сайту коледжу: синя риска під назвою */
+.section-title {
+  position: relative;
+  padding-bottom: 0.6rem;
+  border-bottom: 3px solid var(--line-2);
+}
+.section-title > span {
+  position: relative;
+  display: inline-block;
+}
+.section-title > span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-0.6rem - 3px);
+  height: 3px;
+  background: var(--brand);
 }

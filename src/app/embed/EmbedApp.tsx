@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { CalendarPlus, ChevronLeft, DoorOpen, ExternalLink, GraduationCap, Search, UserRound } from "lucide-react";
+import { CalendarPlus, ChevronLeft, DoorOpen, GraduationCap, Maximize2, Minimize2, Search, UserRound } from "lucide-react";
 import Timetable, { TimetableNav, type OpenTarget } from "@/components/Timetable";
 import TodayBadge from "@/components/TodayBadge";
 import { layoutSwap, normalizeQuery, translit, type BellDTO, type LessonDTO, type Week } from "@/lib/schedule";
 import { encodeSelection } from "@/lib/selection";
 import type { SearchIndex } from "@/lib/queries";
 
-const STORAGE_KEY = "itc-rozklad:last";
+const STORAGE_KEY = "itc-schedule:last";
 
 type Props = {
   index: SearchIndex;
@@ -22,7 +22,7 @@ type Props = {
 
 /** Повідомлення для сторінки-господаря (embed.js) */
 function post(msg: Record<string, unknown>) {
-  if (window.parent !== window) window.parent.postMessage({ source: "itc-rozklad", ...msg }, "*");
+  if (window.parent !== window) window.parent.postMessage({ source: "itc-schedule", ...msg }, "*");
 }
 
 export default function EmbedApp({ index, bells, parity, semesterLabel, initial, initialLessons }: Props) {
@@ -30,7 +30,32 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
   const [lessons, setLessons] = useState<LessonDTO[] | null>(initialLessons);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<OpenTarget[]>([]);
+  const [full, setFull] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // «На весь екран» — розклад розгортається поверх сторінки коледжу, нікуди не переходячи
+  const toggleFull = useCallback((next: boolean) => {
+    setFull(next);
+    if (window.parent !== window) {
+      post({ type: "fullscreen", value: next });
+    } else if (next) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!full) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && toggleFull(false);
+    const onExit = () => !document.fullscreenElement && window.parent === window && setFull(false);
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("fullscreenchange", onExit);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("fullscreenchange", onExit);
+    };
+  }, [full, toggleFull]);
 
   // Автовисота: повідомляємо сторінку коледжу про висоту вмісту
   useEffect(() => {
@@ -96,7 +121,7 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
   const info = useMemo(() => describe(selected, index), [selected, index]);
 
   return (
-    <div ref={rootRef} className="mx-auto max-w-6xl px-1 pb-4 pt-1 text-[15px]">
+    <div ref={rootRef} className={clsx("mx-auto text-[15px]", full ? "min-h-dvh max-w-7xl bg-white px-4 pb-6 pt-4 sm:px-6" : "max-w-6xl px-1 pb-4 pt-1")}>
       <TimetableNav.Provider value={(t) => open(t, "push")}>
         {/* Шапка віджета */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-brand px-4 py-3 text-brand-ink sm:px-5">
@@ -104,7 +129,18 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
             <p className="text-[11px] font-semibold uppercase tracking-wider opacity-75">{semesterLabel}</p>
             <p className="text-lg font-bold leading-tight">Розклад занять</p>
           </div>
-          <TodayBadge bells={bells} parity={parity} onBrand />
+          <div className="flex flex-wrap items-center gap-2">
+            <TodayBadge bells={bells} parity={parity} onBrand />
+            {full && (
+              <button
+                onClick={() => toggleFull(false)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-brand hover:bg-white/90"
+                title="Згорнути (Esc)"
+              >
+                <Minimize2 className="size-4" /> Згорнути
+              </button>
+            )}
+          </div>
         </div>
 
         {!selected ? (
@@ -133,14 +169,12 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
                     <CalendarPlus className="size-4" /> У календар
                   </a>
                 )}
-                <a
-                  href={info.href}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  onClick={() => toggleFull(!full)}
                   className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm font-semibold hover:border-brand hover:text-brand"
                 >
-                  <ExternalLink className="size-4" /> На весь екран
-                </a>
+                  {full ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />} {full ? "Згорнути" : "На весь екран"}
+                </button>
               </div>
             </div>
 

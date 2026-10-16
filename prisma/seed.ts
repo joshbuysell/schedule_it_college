@@ -181,7 +181,7 @@ async function ensureAdmin() {
 }
 
 async function importSchedule() {
-  const text = readFileSync(join(__dirname, "data", "rozklad-2025-2026-sem2.txt"), "utf8");
+  const text = readFileSync(join(__dirname, "data", "schedule-2025-2026-sem2.txt"), "utf8");
   const parsed = parseSchedule(text);
 
   await prisma.lesson.deleteMany();

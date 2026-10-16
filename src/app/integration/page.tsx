@@ -19,8 +19,8 @@ async function publicUrl() {
 
 export default async function IntegrationPage() {
   const base = await publicUrl();
-  const snippet = `<div id="itc-rozklad"></div>\n<script src="${base}/embed.js" async></script>`;
-  const groupSnippet = `<div id="itc-rozklad" data-group="КІ-21"></div>\n<script src="${base}/embed.js" async></script>`;
+  const snippet = `<div id="itc-schedule"></div>\n<script src="${base}/embed.js" async></script>`;
+  const groupSnippet = `<div id="itc-schedule" data-group="КІ-21"></div>\n<script src="${base}/embed.js" async></script>`;
   const fallback = `<iframe src="${base}/embed" title="Розклад занять" width="100%" height="1100" style="border:0"></iframe>`;
 
   const step = (n: number, title: string, body: React.ReactNode) => (
@@ -47,7 +47,7 @@ export default async function IntegrationPage() {
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
             [MonitorSmartphone, "Підлаштовується", "Сам змінює висоту та ширину — і на телефоні, і на комп'ютері."],
-            [Link2, "Посилання на групу", "Адреса сторінки отримує #rozklad=g:КІ-21 — нею можна ділитися."],
+            [Link2, "Посилання на групу", "Адреса сторінки отримує #schedule=g:КІ-21 — нею можна ділитися."],
             [RefreshCw, "Завжди актуальний", "Дані беруться з системи розкладу, нічого не треба перезавантажувати."],
           ].map(([Icon, t, d]) => {
             const I = Icon as typeof Link2;
@@ -97,12 +97,12 @@ export default async function IntegrationPage() {
           <h2 className="font-display text-xl font-bold">Плагін для WordPress</h2>
           <p className="mt-1 text-ink-2">
             Якщо є доступ адміністратора — встановіть плагін «Розклад ІТ коледжу». Він додає шорткод{" "}
-            <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm">[itcollege_rozklad]</code> (або{" "}
-            <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm">[itcollege_rozklad group=&quot;КІ-21&quot;]</code>) і сторінку
+            <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm">[itcollege_schedule]</code> (або{" "}
+            <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm">[itcollege_schedule group=&quot;КІ-21&quot;]</code>) і сторінку
             налаштувань з адресою системи розкладу.
           </p>
           <a
-            href="/downloads/itcollege-rozklad.zip"
+            href="/downloads/itcollege-schedule.zip"
             className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 font-semibold text-brand-ink hover:opacity-90"
           >
             <Download className="size-4" /> Завантажити плагін (.zip)
