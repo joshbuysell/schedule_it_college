@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "./db";
-import { byName, kyivNow, weekParity, type BellDTO, type LessonDTO, type Week } from "./schedule";
+import { byName, kyivNow, relevantParity, type BellDTO, type LessonDTO, type Week } from "./schedule";
 import type { Prisma } from "@prisma/client";
 
 const lessonInclude = {
@@ -52,27 +52,15 @@ export async function getSettings() {
   };
 }
 
-/** Контекст «сьогодні»: день тижня, чисельник/знаменник — на боці сервера, у київському часі. */
 export async function getToday() {
   const [settings, bells] = await Promise.all([getSettings(), getBells()]);
   const now = kyivNow();
   return {
     ...now,
-    parity: weekParity(settings.numeratorAnchor, now.ymd, now.weekday),
+    parity: relevantParity(settings.numeratorAnchor, now.ymd, now.weekday),
     settings,
     bells,
   };
-}
-
-export async function getGroupsByCourse() {
-  const groups = await prisma.group.findMany({
-    orderBy: [{ course: "asc" }, { name: "asc" }],
-    include: { _count: { select: { lessons: true } } },
-  });
-  groups.sort((a, b) => a.course - b.course || byName(a.name, b.name));
-  const byCourse = new Map<number, typeof groups>();
-  for (const g of groups) byCourse.set(g.course, [...(byCourse.get(g.course) ?? []), g]);
-  return byCourse;
 }
 
 export async function getSearchIndex() {

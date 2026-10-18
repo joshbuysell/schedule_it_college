@@ -7,7 +7,6 @@ import { normalizeQuery } from "@/lib/schedule";
 
 export type Option = { value: string; hint?: string; tone?: "ok" | "danger" | "brand"; group?: string };
 
-/** Поле з автодоповненням: можна вибрати зі списку або ввести нове значення. */
 export default function Combobox({
   label,
   value,
@@ -45,7 +44,7 @@ export default function Combobox({
 
   return (
     <div className="relative">
-      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-3">{label}</span>
+      <span className="mb-1 block text-sm font-medium text-ink-2">{label}</span>
       <div
         className={clsx(
           "flex h-11 items-center rounded-xl border bg-surface px-3 transition focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15",
@@ -100,7 +99,7 @@ export default function Combobox({
           {filtered.map((o, i) => (
             <li key={o.value}>
               {(i === 0 || filtered[i - 1].group !== o.group) && o.group && (
-                <p className="px-2.5 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-ink-3">{o.group}</p>
+                <p className="px-2.5 pb-1 pt-2 text-xs font-medium text-ink-3">{o.group}</p>
               )}
               <button
                 type="button"

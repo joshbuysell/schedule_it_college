@@ -20,7 +20,6 @@ type Props = {
   initialLessons: LessonDTO[] | null;
 };
 
-/** Повідомлення для сторінки-господаря (embed.js) */
 function post(msg: Record<string, unknown>) {
   if (window.parent !== window) window.parent.postMessage({ source: "itc-schedule", ...msg }, "*");
 }
@@ -33,7 +32,6 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
   const [full, setFull] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  // «На весь екран» — розклад розгортається поверх сторінки коледжу, нікуди не переходячи
   const toggleFull = useCallback((next: boolean) => {
     setFull(next);
     if (window.parent !== window) {
@@ -57,7 +55,6 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
     };
   }, [full, toggleFull]);
 
-  // Автовисота: повідомляємо сторінку коледжу про висоту вмісту
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -102,7 +99,6 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
     [load, selected],
   );
 
-  // Повертаємо студента до його групи, якщо в адресі нічого не вказано
   useEffect(() => {
     if (initial) {
       try {
@@ -123,10 +119,9 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
   return (
     <div ref={rootRef} className={clsx("mx-auto text-[15px]", full ? "min-h-dvh max-w-7xl bg-white px-4 pb-6 pt-4 sm:px-6" : "max-w-6xl px-1 pb-4 pt-1")}>
       <TimetableNav.Provider value={(t) => open(t, "push")}>
-        {/* Шапка віджета */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-brand px-4 py-3 text-brand-ink sm:px-5">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider opacity-75">{semesterLabel}</p>
+            <p className="text-xs opacity-75">{semesterLabel}</p>
             <p className="text-lg font-bold leading-tight">Розклад занять</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -156,7 +151,7 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
                   <ChevronLeft className="size-4" />
                   {history.length ? `Назад до ${describe(history[history.length - 1], index).title}` : "Вибрати іншу групу чи викладача"}
                 </button>
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-3">{info.eyebrow}</p>
+                <p className="text-sm text-ink-3">{info.eyebrow}</p>
                 <h2 className="text-2xl font-bold leading-tight sm:text-3xl">{info.title}</h2>
                 {info.subtitle && <p className="text-sm text-ink-2">{info.subtitle}</p>}
               </div>
@@ -221,7 +216,6 @@ function describe(t: OpenTarget | null, index: SearchIndex) {
   return { title: t.key === "кфв" ? "Спорткомплекс" : `Аудиторія ${t.key}`, eyebrow: "Аудиторія", subtitle: "", href: `/room/${encodeURIComponent(t.key)}` };
 }
 
-/** Вибір групи / викладача / аудиторії з пошуком */
 function Picker({ index, onPick }: { index: SearchIndex; onPick: (t: OpenTarget) => void }) {
   const [tab, setTab] = useState<"groups" | "teachers">("groups");
   const [q, setQ] = useState("");
@@ -316,7 +310,7 @@ function Picker({ index, onPick }: { index: SearchIndex; onPick: (t: OpenTarget)
 function Section({ title, icon: Icon, children }: { title: string; icon: typeof Search; children: React.ReactNode }) {
   return (
     <section>
-      <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-ink-3">
+      <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-ink-3">
         <Icon className="size-3.5" /> {title}
       </p>
       {children}

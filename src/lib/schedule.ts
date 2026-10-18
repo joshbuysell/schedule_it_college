@@ -1,4 +1,3 @@
-// Спільні типи та утиліти розкладу — працюють і на сервері, і в браузері.
 
 export type Week = "all" | "num" | "den";
 
@@ -31,7 +30,6 @@ export const WEEK_LABEL: Record<Week, string> = {
 
 export const TZ = "Europe/Kyiv";
 
-/** Поточна дата/час у Києві незалежно від часового поясу сервера чи браузера. */
 export function kyivNow(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: TZ,
@@ -57,11 +55,17 @@ function utcDay(ymd: string) {
   return Date.UTC(y, m - 1, d) / 86_400_000;
 }
 
-/** Чисельник чи знаменник для дати. anchor — понеділок тижня-чисельника. */
 export function weekParity(anchor: string, ymd: string, weekday: number): Exclude<Week, "all"> {
   const monday = utcDay(ymd) - (weekday - 1);
-  const weeks = Math.floor((monday - utcDay(anchor)) / 7);
+  const a = utcDay(anchor);
+  const anchorMonday = a - ((new Date(a * 86_400_000).getUTCDay() + 6) % 7);
+  const weeks = Math.round((monday - anchorMonday) / 7);
   return ((weeks % 2) + 2) % 2 === 0 ? "num" : "den";
+}
+
+export function relevantParity(anchor: string, ymd: string, weekday: number): Exclude<Week, "all"> {
+  const p = weekParity(anchor, ymd, weekday);
+  return weekday > 5 ? (p === "num" ? "den" : "num") : p;
 }
 
 export function toMinutes(hhmm: string) {
@@ -69,7 +73,6 @@ export function toMinutes(hhmm: string) {
   return h * 60 + m;
 }
 
-/** Номер пари, що йде зараз, або наступної (якщо перерва). */
 export function currentPair(bells: BellDTO[], minutes: number) {
   for (const b of bells) {
     if (minutes >= toMinutes(b.start) && minutes < toMinutes(b.end)) return { pair: b.pair, live: true };
@@ -78,7 +81,6 @@ export function currentPair(bells: BellDTO[], minutes: number) {
   return next ? { pair: next.pair, live: false } : null;
 }
 
-/** Чи накладаються два заняття в часі (з урахуванням чисельника/знаменника). */
 export function weeksOverlap(a: Week, b: Week) {
   return a === "all" || b === "all" || a === b;
 }
@@ -87,25 +89,21 @@ export function matchesWeek(lesson: Week, filter: Week) {
   return filter === "all" || lesson === "all" || lesson === filter;
 }
 
-/** Стабільний колір дисципліни: однаковий предмет — однаковий відтінок. */
 export function subjectHue(name: string) {
   let h = 0;
   for (const ch of name) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
   return h % 360;
 }
 
-/** Курс за назвою групи: КІ-21 → 2, МТ-210 → 2. */
 export function courseOf(group: string) {
   const m = group.match(/-(\d)/);
   return m ? +m[1] : 0;
 }
 
-/** Скорочена назва дисципліни для вузьких клітинок. */
 export function shortSubject(name: string, max = 28) {
   return name.length <= max ? name : name.slice(0, max - 1).trimEnd() + "…";
 }
 
-/** Пошук без урахування регістру, дефісів і розкладки клавіатури (ki11 / кі11 / rs11). */
 const EN = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`";
 const UA = "йцукенгшщзхїфівапролджєячсмитьбюʼ";
 export function normalizeQuery(q: string) {
@@ -131,5 +129,4 @@ export function translit(q: string) {
   return s;
 }
 
-/** Природне сортування назв (КІ-2 < КІ-11) незалежно від налаштувань бази даних. */
 export const byName = (a: string, b: string) => a.localeCompare(b, "uk", { numeric: true });

@@ -13,7 +13,9 @@
     "postinstall": "prisma generate",
     "plugin:zip": "cd wordpress-plugin && rm -f ../public/downloads/itcollege-schedule.zip && zip -qr ../public/downloads/itcollege-schedule.zip itcollege-schedule",
     "db:deploy": "prisma db push --skip-generate && tsx prisma/seed.ts --if-empty",
-    "vercel-build": "prisma generate && npm run db:deploy && next build"
+    "vercel-build": "prisma generate && npm run db:deploy && next build",
+    "check": "tsx scripts/check-conflicts.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -39,7 +41,8 @@
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

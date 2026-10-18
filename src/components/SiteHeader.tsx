@@ -4,7 +4,6 @@ import { getSearchIndex } from "@/lib/queries";
 import Search from "./Search";
 import NavStrip from "./NavStrip";
 
-/** Шапка в стилі itcollege.lviv.ua: біла смуга з лого та синя смуга меню. */
 export default async function SiteHeader({ search = true }: { search?: boolean }) {
   const index = search ? await getSearchIndex() : null;
   return (

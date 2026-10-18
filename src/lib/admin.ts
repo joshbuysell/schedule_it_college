@@ -11,7 +11,6 @@ export async function getSession() {
 
 export const bad = (error: string, status = 400) => NextResponse.json({ error }, { status });
 
-/** Знайти або створити запис довідника за назвою (для швидкого введення в редакторі). */
 export async function ensureSubject(name: string) {
   const n = name.trim();
   return prisma.subject.upsert({ where: { name: n }, update: {}, create: { name: n } });

@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 
 export const SESSION_COOKIE = "schedule_session";
-const MAX_AGE = 60 * 60 * 12; // 12 годин
+const MAX_AGE = 60 * 60 * 12;
 
 export type Session = { uid: number; email: string; name: string; role: string };
 

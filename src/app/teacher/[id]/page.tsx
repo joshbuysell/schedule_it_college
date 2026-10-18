@@ -25,18 +25,17 @@ export default async function TeacherPage({ params }: Props) {
 
   const [lessons, today] = await Promise.all([lessonsWhere({ teacherId: teacher.id }), getToday()]);
   const groups = [...new Set(lessons.map((l) => l.group))].sort((a, b) => a.localeCompare(b, "uk"));
-  // навантаження: щотижневі пари = 1, чисельник/знаменник = 0.5
   const load_ = lessons.reduce((s, l) => s + (l.week === "all" ? 1 : 0.5), 0);
 
   return (
     <ScheduleShell
-      eyebrow={teacher.commission ? `Циклова комісія ${teacher.commission.toLowerCase()}` : "Викладач"}
+      crumbs={[{ href: "/", label: "Розклад" }, { href: "/teachers", label: "Викладачі" }]}
       title={teacher.fullName ?? teacher.shortName}
-      subtitle={[teacher.degree, teacher.fullName ? teacher.shortName : null].filter(Boolean).join(" · ") || undefined}
-      stats={[
-        { label: "пар на тиждень (у середньому)", value: load_ },
-        { label: "груп", value: groups.length },
-      ]}
+      subtitle={
+        [teacher.degree, teacher.commission && `циклова комісія ${teacher.commission.toLowerCase()}`, `${load_} пар на тиждень`]
+          .filter(Boolean)
+          .join(" · ")
+      }
     >
       <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="teacher" />
       {groups.length > 0 && (

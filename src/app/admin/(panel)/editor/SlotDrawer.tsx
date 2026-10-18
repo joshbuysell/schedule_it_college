@@ -34,7 +34,6 @@ export default function SlotDrawer(props: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Підказка для нового запису: якщо вже є чисельник — пропонуємо знаменник, якщо 1 підгрупа — другу
   const suggestion = useMemo(() => {
     const weeks = new Set(lessons.map((l) => l.week));
     const sgs = new Set(lessons.map((l) => l.subgroup));
@@ -47,8 +46,8 @@ export default function SlotDrawer(props: Props) {
     <aside className="drawer-in fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-line bg-surface shadow-2xl sm:top-14">
       <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-brand">{group.name}</p>
-          <h2 className="font-display text-xl font-bold">
+          <p className="text-sm text-brand">{group.name}</p>
+          <h2 className="text-xl font-bold">
             {DAYS[slot.day - 1]}, {slot.pair} пара
           </h2>
           {bell && <p className="text-sm font-semibold tabular-nums text-ink-3">{bell.start} – {bell.end}</p>}
@@ -136,7 +135,6 @@ function LessonForm({
   const probe = { id: lesson?.id ?? -1, day: slot.day, pair: slot.pair, week, subgroup, groupId: group.id };
   const issues = issuesFor({ ...probe, teacherId, roomId });
 
-  // Хто зайнятий у цей час (з урахуванням тижня), щоб підсвітити у списках
   const slotOthers = useMemo(
     () => allLessons.filter((o) => o.day === slot.day && o.pair === slot.pair && o.id !== lesson?.id && weeksOverlap(o.week, week) && o.groupId !== group.id),
     [allLessons, slot, lesson?.id, week, group.id],
@@ -213,7 +211,7 @@ function LessonForm({
       style={{ borderTop: `4px solid oklch(0.62 0.14 ${hue})` }}
     >
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wide text-ink-3">{lesson ? "Заняття" : "Нове заняття"}</span>
+        <span className="text-sm font-medium text-ink-2">{lesson ? "Заняття" : "Нове заняття"}</span>
         {lesson && (
           <button type="button" onClick={remove} disabled={saving} className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-danger hover:bg-danger-soft">
             <Trash2 className="size-3.5" /> Видалити
@@ -227,11 +225,11 @@ function LessonForm({
         <Combobox label="Аудиторія" value={room} onChange={setRoom} options={roomOptions} placeholder="Напр. 413 або 209л" />
 
         <div>
-          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-3">Тиждень</span>
+          <span className="mb-1 block text-sm font-medium text-ink-2">Тиждень</span>
           <Pills value={week} onChange={(v) => setWeek(v as Week)} options={[["all", "Щотижня"], ["num", "Чисельник"], ["den", "Знаменник"]]} />
         </div>
         <div>
-          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-3">Хто навчається</span>
+          <span className="mb-1 block text-sm font-medium text-ink-2">Хто навчається</span>
           <Pills value={String(subgroup)} onChange={(v) => setSubgroup(+v)} options={[["0", "Уся група"], ["1", "1 підгрупа"], ["2", "2 підгрупа"]]} />
         </div>
       </div>

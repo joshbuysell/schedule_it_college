@@ -2,7 +2,6 @@ import { z } from "zod";
 
 const opt = z.string().trim().max(160).nullish().transform((v) => v || null);
 
-/** Дозволені поля для кожного довідника. */
 export const DICT = {
   teachers: { model: "teacher", schema: z.object({ shortName: z.string().trim().min(3).max(60), fullName: opt, commission: opt, degree: opt }) },
   subjects: { model: "subject", schema: z.object({ name: z.string().trim().min(2).max(120) }) },

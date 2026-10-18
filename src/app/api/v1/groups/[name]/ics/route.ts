@@ -11,7 +11,6 @@ function addDays(ymd: string, days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Календар групи у форматі iCalendar: щотижневі / двотижневі (чисельник, знаменник) події. */
 export async function GET(_req: Request, { params }: { params: Promise<{ name: string }> }) {
   const name = decodeURIComponent((await params).name);
   const group = await prisma.group.findUnique({ where: { name } });
@@ -34,7 +33,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ name: s
   for (const l of lessons) {
     const bell = today.bells.find((b) => b.pair === l.pair);
     if (!bell) continue;
-    // перший день: понеділок-якір + (день − 1) + тиждень, якщо знаменник
     const date = addDays(numeratorAnchor, l.day - 1 + (l.week === "den" ? 7 : 0)).replaceAll("-", "");
     const time = (hhmm: string) => hhmm.replace(":", "") + "00";
     const tags = [l.week === "num" ? "чисельник" : l.week === "den" ? "знаменник" : "", l.subgroup ? `${l.subgroup} підгрупа` : ""].filter(Boolean);
@@ -53,7 +51,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ name: s
   }
   lines.push("END:VCALENDAR");
 
-  // RFC 5545: рядки до 75 октетів, CRLF
   const fold = (line: string) => {
     const out: string[] = [];
     let cur = "";

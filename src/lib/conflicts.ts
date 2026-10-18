@@ -12,7 +12,6 @@ function subgroupsOverlap(a: number, b: number) {
   return a === 0 || b === 0 || a === b;
 }
 
-/** Чи конфліктують два заняття: той самий час + спільний викладач / аудиторія / група. */
 export function conflictKind(a: LessonDTO, b: LessonDTO, sharedRooms: Set<number>): Conflict["kind"] | null {
   if (a.id === b.id || a.day !== b.day || a.pair !== b.pair || !weeksOverlap(a.week, b.week)) return null;
   if (a.groupId === b.groupId) return subgroupsOverlap(a.subgroup, b.subgroup) ? "group" : null;
@@ -28,7 +27,6 @@ export function findConflicts(lessons: LessonDTO[], sharedRooms: Set<number>): C
     bySlot.set(key, [...(bySlot.get(key) ?? []), l]);
   }
 
-  // один запис на кожну пару (тип конфлікту, викладач/аудиторія/група) у слоті
   const out = new Map<string, Conflict>();
   for (const slot of bySlot.values()) {
     for (let i = 0; i < slot.length; i++) {

@@ -13,7 +13,6 @@ const ITEMS = [
   { href: "/integration", label: "Для сайту коледжу" },
 ];
 
-/** Синя смуга меню, як на itcollege.lviv.ua; прилипає до верху при прокручуванні. */
 export default function NavStrip() {
   const path = usePathname();
   const active = (href: string) =>

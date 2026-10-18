@@ -15,7 +15,7 @@ export default function SiteFooter({ source }: { source?: string }) {
           </div>
         </div>
         <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-white/50">Розклад</p>
+          <p className="mb-2 text-sm font-semibold text-white">Розклад</p>
           <ul className="space-y-1.5 text-sm">
             <li><Link href="/groups" className={link}>Групи</Link></li>
             <li><Link href="/teachers" className={link}>Викладачі</Link></li>
@@ -26,7 +26,7 @@ export default function SiteFooter({ source }: { source?: string }) {
           </ul>
         </div>
         <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-white/50">Для коледжу</p>
+          <p className="mb-2 text-sm font-semibold text-white">Для коледжу</p>
           <ul className="space-y-1.5 text-sm">
             <li><a href="https://itcollege.lviv.ua" className={link}>Сайт коледжу</a></li>
             <li><Link href="/integration" className={link}>Вбудувати на сайт</Link></li>

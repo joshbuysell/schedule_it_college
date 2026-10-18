@@ -33,7 +33,6 @@ export default function SettingsForm({
     router.refresh();
   }
 
-  // Поточний тиждень стає протилежним: зсуваємо «якір» чисельника на тиждень
   const flipWeek = () => {
     const anchor = parity === "num" ? new Date(Date.parse(thisMonday) - 7 * 86_400_000).toISOString().slice(0, 10) : thisMonday;
     setS({ ...s, numeratorAnchor: anchor });
@@ -44,15 +43,15 @@ export default function SettingsForm({
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl font-bold">Налаштування</h1>
+        <h1 className="text-3xl font-bold">Налаштування</h1>
         {(busy || msg) && <span className="flex items-center gap-2 text-sm font-semibold text-ok">{busy && <LoaderCircle className="size-4 animate-spin" />}{msg}</span>}
       </div>
 
       <section className="mt-6 rounded-3xl border border-line bg-surface p-6 shadow-card">
-        <h2 className="font-display text-lg font-bold">Чисельник / знаменник</h2>
+        <h2 className="text-lg font-bold">Чисельник / знаменник</h2>
         <p className="mt-1 text-sm text-ink-3">Тиждень рахується автоматично. Якщо навчальна частина оголосила інакше — перемкніть одним натиском.</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="rounded-xl bg-brand px-4 py-2 font-display font-bold text-brand-ink">
+          <span className="rounded-xl bg-brand px-4 py-2 font-bold text-brand-ink">
             Цей тиждень: {parity === "num" ? "чисельник" : "знаменник"}
           </span>
           <button onClick={flipWeek} className="flex items-center gap-2 rounded-xl border border-line px-4 py-2 font-semibold hover:border-ink-3">
@@ -62,7 +61,7 @@ export default function SettingsForm({
       </section>
 
       <section className="mt-6 rounded-3xl border border-line bg-surface p-6 shadow-card">
-        <h2 className="font-display text-lg font-bold">Семестр</h2>
+        <h2 className="text-lg font-bold">Семестр</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-semibold sm:col-span-2">
             Назва (показується на головній)
@@ -81,7 +80,7 @@ export default function SettingsForm({
       </section>
 
       <section className="mt-6 rounded-3xl border border-line bg-surface p-6 shadow-card">
-        <h2 className="font-display text-lg font-bold">Розклад дзвінків</h2>
+        <h2 className="text-lg font-bold">Розклад дзвінків</h2>
         <div className="mt-4 space-y-2">
           {bells.map((b, i) => (
             <div key={b.pair} className="flex items-center gap-3">

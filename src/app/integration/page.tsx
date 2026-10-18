@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Download, Link2, MonitorSmartphone, RefreshCw } from "lucide-react";
+import { Download } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CopyCode from "@/components/CopyCode";
@@ -25,9 +25,9 @@ export default async function IntegrationPage() {
 
   const step = (n: number, title: string, body: React.ReactNode) => (
     <li className="flex gap-4">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand font-display text-sm font-bold text-brand-ink">{n}</span>
+      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand text-sm font-medium text-white">{n}</span>
       <div className="pt-1">
-        <p className="font-bold">{title}</p>
+        <p className="font-semibold">{title}</p>
         <div className="mt-1 text-ink-2">{body}</div>
       </div>
     </li>
@@ -37,32 +37,15 @@ export default async function IntegrationPage() {
     <>
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:px-6">
-        <p className="text-xs font-bold uppercase tracking-wider text-brand">Для адміністратора сайту itcollege.lviv.ua</p>
-        <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">Розклад на сторінці коледжу</h1>
-        <p className="mt-3 max-w-2xl text-ink-2">
+        <h1 className="text-3xl font-semibold tracking-tight">Розклад на сайті коледжу</h1>
+        <p className="mt-2 max-w-2xl text-ink-2">
           Замість PDF зі сканом на сторінці «Розклад» буде живий розклад: пошук групи, сітка занять, чисельник/знаменник.
-          Зміни, внесені навчальною частиною, зʼявляються на сайті одразу.
+          Зміни, внесені навчальною частиною, зʼявляються на сайті одразу. Віджет сам підлаштовує висоту, а вибрана група
+          записується в адресу сторінки (<code>#schedule=g:КІ-21</code>), тож посиланням можна ділитися.
         </p>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          {[
-            [MonitorSmartphone, "Підлаштовується", "Сам змінює висоту та ширину — і на телефоні, і на комп'ютері."],
-            [Link2, "Посилання на групу", "Адреса сторінки отримує #schedule=g:КІ-21 — нею можна ділитися."],
-            [RefreshCw, "Завжди актуальний", "Дані беруться з системи розкладу, нічого не треба перезавантажувати."],
-          ].map(([Icon, t, d]) => {
-            const I = Icon as typeof Link2;
-            return (
-              <div key={t as string} className="rounded-2xl border border-line bg-surface p-4 shadow-card">
-                <I className="size-5 text-brand" />
-                <p className="mt-2 font-bold">{t as string}</p>
-                <p className="text-sm text-ink-3">{d as string}</p>
-              </div>
-            );
-          })}
-        </div>
-
         <section className="mt-10">
-          <h2 className="font-display text-2xl font-bold">Як вставити (3 хвилини)</h2>
+          <h2 className="text-xl font-semibold">Як вставити</h2>
           <ol className="mt-5 space-y-5">
             {step(1, "Відкрийте сторінку «Розклад» у WordPress", <>Записи → «РОЗКЛАД навчальних занять…» → Редагувати.</>)}
             {step(2, "Видаліть блок із PDF", <>Блок PDF Embedder із файлом розкладу більше не потрібен.</>)}
@@ -79,13 +62,13 @@ export default async function IntegrationPage() {
 
         <section className="mt-10 grid gap-6 lg:grid-cols-2">
           <div>
-            <h3 className="font-bold">Розклад однієї групи (напр. на сторінці спеціальності)</h3>
+            <h3 className="font-semibold">Розклад однієї групи (напр. на сторінці спеціальності)</h3>
             <div className="mt-2">
               <CopyCode code={groupSnippet} />
             </div>
           </div>
           <div>
-            <h3 className="font-bold">Якщо WordPress не дозволяє скрипти</h3>
+            <h3 className="font-semibold">Якщо WordPress не дозволяє скрипти</h3>
             <p className="mt-1 text-sm text-ink-3">Простий iframe без автоматичної висоти:</p>
             <div className="mt-2">
               <CopyCode code={fallback} />
@@ -93,8 +76,8 @@ export default async function IntegrationPage() {
           </div>
         </section>
 
-        <section className="mt-10 rounded-3xl border border-line bg-surface p-6 shadow-card">
-          <h2 className="font-display text-xl font-bold">Плагін для WordPress</h2>
+        <section className="mt-10 border-t border-line pt-8">
+          <h2 className="text-xl font-semibold">Плагін для WordPress</h2>
           <p className="mt-1 text-ink-2">
             Якщо є доступ адміністратора — встановіть плагін «Розклад ІТ коледжу». Він додає шорткод{" "}
             <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm">[itcollege_schedule]</code> (або{" "}
@@ -103,7 +86,7 @@ export default async function IntegrationPage() {
           </p>
           <a
             href="/downloads/itcollege-schedule.zip"
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 font-semibold text-brand-ink hover:opacity-90"
+            className="mt-4 inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 font-medium text-white hover:bg-brand-deep"
           >
             <Download className="size-4" /> Завантажити плагін (.zip)
           </a>
@@ -111,9 +94,9 @@ export default async function IntegrationPage() {
         </section>
 
         <section className="mt-10">
-          <h2 className="font-display text-2xl font-bold">Як це виглядатиме</h2>
-          <p className="mt-1 text-ink-3">Живий віджет — у тих самих кольорах, що й сайт коледжу.</p>
-          <div className="mt-4 rounded-3xl border border-line bg-white p-4 shadow-card sm:p-6">
+          <h2 className="text-xl font-semibold">Попередній перегляд</h2>
+          
+          <div className="mt-4 rounded-md border border-line p-4 sm:p-6">
             <EmbedPreview />
           </div>
         </section>

@@ -16,15 +16,10 @@ if (!defined('ABSPATH')) {
 
 const ITC_SCHEDULE_OPTION = 'itc_schedule_url';
 
-/** Адреса системи розкладу без кінцевого слеша. */
 function itc_schedule_base_url() {
     return untrailingslashit(esc_url_raw(get_option(ITC_SCHEDULE_OPTION, '')));
 }
 
-/**
- * [itcollege_schedule]                 — вибір групи / викладача
- * [itcollege_schedule group="КІ-21"]   — розклад однієї групи
- */
 function itc_schedule_shortcode($atts) {
     $atts = shortcode_atts(['group' => ''], $atts, 'itcollege_schedule');
     $base = itc_schedule_base_url();
@@ -47,8 +42,6 @@ function itc_schedule_shortcode($atts) {
     );
 }
 add_shortcode('itcollege_schedule', 'itc_schedule_shortcode');
-
-/* ---------- Сторінка налаштувань ---------- */
 
 function itc_schedule_settings_init() {
     register_setting('itc_schedule', ITC_SCHEDULE_OPTION, [
@@ -96,7 +89,6 @@ function itc_schedule_settings_page() {
     <?php
 }
 
-/** Посилання «Налаштування» у списку плагінів. */
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
     array_unshift($links, '<a href="' . esc_url(admin_url('options-general.php?page=itc-schedule')) . '">Налаштування</a>');
     return $links;

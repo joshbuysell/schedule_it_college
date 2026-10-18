@@ -26,9 +26,9 @@ export default async function RoomPage({ params }: Props) {
 
   return (
     <ScheduleShell
-      eyebrow={room.name.endsWith("л") ? "Лабораторія" : "Аудиторія"}
+      crumbs={[{ href: "/", label: "Розклад" }]}
       title={roomTitle(room.name)}
-      stats={[{ label: `зайнятість (${busy} з ${total} пар)`, value: `${Math.round((busy / total) * 100)}%` }]}
+      subtitle={`Зайнята ${busy} з ${total} пар на тиждень (${Math.round((busy / total) * 100)}%)`}
     >
       <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="room" />
     </ScheduleShell>

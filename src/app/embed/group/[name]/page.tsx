@@ -5,10 +5,6 @@ import { getToday, lessonsWhere } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Віджет для вбудовування на сайт коледжу (WordPress):
- * <iframe src="https://<домен>/embed/group/КІ-21" width="100%" height="900" style="border:0"></iframe>
- */
 export default async function EmbedGroup({ params }: { params: Promise<{ name: string }> }) {
   const name = decodeURIComponent((await params).name);
   const group = await prisma.group.findUnique({ where: { name } });
@@ -18,7 +14,7 @@ export default async function EmbedGroup({ params }: { params: Promise<{ name: s
   return (
     <main className="p-3">
       <div className="mb-3 flex items-baseline justify-between">
-        <h1 className="font-display text-xl font-bold">Розклад {group.name}</h1>
+        <h1 className="text-xl font-bold">Розклад {group.name}</h1>
         <a href={`/group/${encodeURIComponent(group.name)}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-brand hover:underline">
           Відкрити повністю ↗
         </a>

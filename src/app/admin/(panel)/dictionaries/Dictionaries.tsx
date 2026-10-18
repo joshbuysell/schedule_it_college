@@ -68,7 +68,7 @@ export default function Dictionaries({ data }: { data: Record<Kind, Row[]> }) {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="font-display text-3xl font-bold">Довідники</h1>
+      <h1 className="text-3xl font-bold">Довідники</h1>
       <p className="mt-1 text-ink-3">Нові викладачі, дисципліни та аудиторії також створюються автоматично прямо в редакторі.</p>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -92,7 +92,7 @@ export default function Dictionaries({ data }: { data: Record<Kind, Row[]> }) {
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-surface shadow-card">
         <table className="w-full text-sm">
-          <thead className="bg-surface-2 text-left text-xs font-bold uppercase tracking-wide text-ink-3">
+          <thead className="bg-surface-2 text-left text-sm font-medium text-ink-2">
             <tr>
               {cfg.fields.map((f) => (
                 <th key={f.key} className="px-3 py-2.5">{f.label}</th>
@@ -109,7 +109,16 @@ export default function Dictionaries({ data }: { data: Record<Kind, Row[]> }) {
                 fields={cfg.fields}
                 row={r}
                 onSave={(v) => call(`/api/admin/dict/${kind}/${r.id}`, "PATCH", v).then((ok) => ok && flash("Збережено"))}
-                onDelete={() => call(`/api/admin/dict/${kind}/${r.id}`, "DELETE").then((ok) => ok && flash("Видалено"))}
+                onDelete={() => {
+                  const n = r._count.lessons;
+                  const warn =
+                    n === 0
+                      ? "Видалити запис?"
+                      : kind === "groups"
+                        ? `Разом із групою буде видалено ${n} занять. Продовжити?`
+                        : `Запис використовується в ${n} заняттях — там він стане порожнім. Продовжити?`;
+                  if (confirm(warn)) call(`/api/admin/dict/${kind}/${r.id}`, "DELETE").then((ok) => ok && flash("Видалено"));
+                }}
               />
             ))}
           </tbody>
@@ -168,7 +177,7 @@ function EditableRow({
         )}
         {row && onDelete && !dirty && (
           <button
-            onClick={() => confirm("Видалити запис?") && onDelete()}
+            onClick={onDelete}
             className="rounded-lg p-1.5 text-ink-3 hover:bg-danger-soft hover:text-danger"
             aria-label="Видалити"
           >

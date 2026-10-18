@@ -8,10 +8,6 @@ import EmbedApp from "./EmbedApp";
 export const metadata: Metadata = { title: "Розклад занять", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-/**
- * Повноцінний віджет розкладу для сторінки «Розклад» на itcollege.lviv.ua.
- * Підключається скриптом /embed.js (автовисота, посилання на групу в адресі сторінки).
- */
 export default async function EmbedPage({ searchParams }: { searchParams: Promise<{ select?: string }> }) {
   const { select } = await searchParams;
   const initial = decodeSelection(select);

@@ -28,7 +28,7 @@ export default async function Dashboard() {
 
   const stat = (label: string, value: number | string, tone = "") => (
     <div className="rounded-2xl border border-line bg-surface p-5 shadow-card">
-      <p className={`font-display text-3xl font-bold ${tone}`}>{value}</p>
+      <p className={`text-3xl font-bold ${tone}`}>{value}</p>
       <p className="mt-1 text-sm text-ink-3">{label}</p>
     </div>
   );
@@ -37,8 +37,8 @@ export default async function Dashboard() {
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-brand">{settings.semesterLabel}</p>
-          <h1 className="font-display text-3xl font-bold">Огляд розкладу</h1>
+          <p className="text-sm text-brand">{settings.semesterLabel}</p>
+          <h1 className="text-3xl font-bold">Огляд розкладу</h1>
         </div>
         <Link href="/admin/editor" className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 font-semibold text-brand-ink hover:opacity-90">
           Відкрити редактор <ArrowRight className="size-4" />
@@ -54,7 +54,7 @@ export default async function Dashboard() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <section className="rounded-3xl border border-line bg-surface p-6 shadow-card lg:col-span-2">
-          <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             {conflicts.length ? <AlertTriangle className="size-5 text-danger" /> : <CheckCircle2 className="size-5 text-ok" />}
             Накладки
           </h2>
@@ -63,7 +63,7 @@ export default async function Dashboard() {
             чисельника/знаменника та підгруп). Спорткомплекс не перевіряється.
           </p>
           {conflicts.length === 0 ? (
-            <p className="mt-4 rounded-2xl bg-surface-2 p-4 text-sm font-semibold text-ok">Накладок немає 🎉</p>
+            <p className="mt-4 rounded-2xl bg-surface-2 p-4 text-sm font-semibold text-ok">Накладок немає.</p>
           ) : (
             <ul className="mt-4 divide-y divide-line">
               {conflicts.map((c, i) => {
@@ -100,7 +100,7 @@ export default async function Dashboard() {
         </section>
 
         <section className="rounded-3xl border border-line bg-surface p-6 shadow-card">
-          <h2 className="font-display text-lg font-bold">Нещодавно змінені</h2>
+          <h2 className="text-lg font-bold">Нещодавно змінені</h2>
           <ul className="mt-3 space-y-1">
             {groups.slice(0, 8).map((g) => (
               <li key={g.id}>

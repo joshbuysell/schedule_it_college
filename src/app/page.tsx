@@ -1,125 +1,79 @@
 import Link from "next/link";
-import { ArrowUpRight, Bell, CalendarRange, UsersRound } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import Search from "@/components/Search";
 import TodayBadge from "@/components/TodayBadge";
+import GroupMatrix from "@/components/GroupMatrix";
 import { MyGroupCard } from "@/components/MyGroup";
-import { getGroupsByCourse, getSearchIndex, getToday } from "@/lib/queries";
+import { getSearchIndex, getToday } from "@/lib/queries";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [today, index, byCourse, stats] = await Promise.all([
-    getToday(),
-    getSearchIndex(),
-    getGroupsByCourse(),
-    Promise.all([prisma.group.count(), prisma.teacher.count(), prisma.lesson.count(), prisma.room.count()]),
-  ]);
-  const [groupCount, teacherCount, lessonCount, roomCount] = stats;
+  const [today, index, groups] = await Promise.all([getToday(), getSearchIndex(), prisma.group.findMany()]);
 
   return (
     <>
       <SiteHeader search={false} />
-      <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-        <section className="relative mt-6 overflow-hidden rounded-3xl bg-gradient-to-b from-brand-soft to-white px-4 pb-12 pt-10 sm:px-6 sm:pt-14">
-          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-brand/[0.06]" />
-          <div aria-hidden className="pointer-events-none absolute -left-16 top-24 size-48 rounded-full bg-accent/[0.07]" />
-          <div className="relative mx-auto max-w-3xl text-center">
-            <p className="mb-4 inline-flex rounded-full bg-brand px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-ink">
-              {today.settings.semesterLabel}
-            </p>
-            <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-ink sm:text-5xl">
-              Розклад занять <span className="text-brand">ІТ коледжу</span>
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-base text-ink-2 sm:text-lg">
-              Знайдіть свою групу чи викладача за секунду. Поточна пара, чисельник і знаменник — усе видно одразу, і з телефона теж.
-            </p>
-            <div className="mt-8">
-              <Search index={index} />
-            </div>
-            <div className="mt-5 flex justify-center">
-              <TodayBadge bells={today.bells} parity={today.parity} />
-            </div>
+      <main className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <section className="border-b border-line pb-8 pt-8 sm:pt-12">
+          <p className="text-sm text-ink-3">{today.settings.semesterLabel}</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">Розклад занять</h1>
+          <div className="mt-6 max-w-3xl">
+            <Search index={index} />
+          </div>
+          <div className="mt-4">
+            <TodayBadge bells={today.bells} parity={today.parity} />
           </div>
         </section>
 
-        <div className="mt-4 space-y-10">
-          <MyGroupCard bells={today.bells} parity={today.parity} />
+        <MyGroupCard bells={today.bells} parity={today.parity} />
 
-          <section>
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <h2 className="section-title flex-1 text-xl font-semibold uppercase tracking-wide"><span>Групи</span></h2>
-              <Link href="/groups" className="text-sm font-semibold text-brand hover:underline">
-                Усі групи за спеціальностями
-              </Link>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[...byCourse.entries()].map(([course, groups]) => (
-                <div key={course} className="rounded-3xl border border-line bg-surface p-5 shadow-card">
-                  <div className="mb-4 flex items-baseline justify-between">
-                    <h3 className="font-display text-lg font-bold">{course} курс</h3>
-                    <span className="text-xs font-semibold text-ink-3">{groups.length} груп</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {groups.map((g) => (
-                      <Link
-                        key={g.id}
-                        href={`/group/${encodeURIComponent(g.name)}`}
-                        className="rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-sm font-bold tabular-nums transition hover:-translate-y-px hover:border-brand hover:bg-brand hover:text-brand-ink"
-                      >
-                        {g.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+        <section className="mt-10">
+          <div className="mb-3 flex items-baseline justify-between gap-4">
+            <h2 className="text-xl font-semibold">Групи</h2>
+            <Link href="/teachers" className="text-sm text-brand hover:underline">
+              Розклад викладачів →
+            </Link>
+          </div>
+          <GroupMatrix groups={groups} />
+        </section>
 
-          <section className="grid gap-4 lg:grid-cols-3">
-            <div id="bells" className="scroll-mt-20 rounded-3xl border border-line bg-surface p-6 shadow-card">
-              <div className="mb-4 flex items-center gap-2">
-                <Bell className="size-5 text-brand" />
-                <h2 className="font-display text-lg font-bold">Розклад дзвінків</h2>
-              </div>
-              <ol className="space-y-1.5">
+        <section id="bells" className="mt-12 grid scroll-mt-20 gap-10 md:grid-cols-[minmax(0,320px)_1fr]">
+          <div>
+            <h2 className="mb-3 text-xl font-semibold">Розклад дзвінків</h2>
+            <table className="w-full text-[15px]">
+              <tbody>
                 {today.bells.map((b) => (
-                  <li key={b.pair} className="flex items-center justify-between rounded-xl bg-surface-2 px-3 py-2 text-sm">
-                    <span className="font-bold">{b.pair} пара</span>
-                    <span className="font-semibold tabular-nums text-ink-2">
+                  <tr key={b.pair} className="border-b border-line">
+                    <td className="py-2 pr-4 text-ink-3">{b.pair} пара</td>
+                    <td className="py-2 text-right font-medium tabular-nums">
                       {b.start} – {b.end}
-                    </span>
-                  </li>
+                    </td>
+                  </tr>
                 ))}
-              </ol>
-            </div>
-
-            <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-brand to-brand-deep p-6 text-brand-ink shadow-card lg:col-span-2">
-              <div>
-                <h2 className="text-2xl font-bold">Розклад, з яким зручно</h2>
-                <p className="mt-2 max-w-lg opacity-85">
-                  Позначте свою групу зірочкою — і на головній завжди будуть сьогоднішні пари. Додайте розклад у Google
-                  Календар одним натиском.
-                </p>
-              </div>
-              <dl className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {[
-                  [groupCount, "груп", UsersRound],
-                  [teacherCount, "викладачів", UsersRound],
-                  [lessonCount, "занять на тиждень", CalendarRange],
-                  [roomCount, "аудиторій", ArrowUpRight],
-                ].map(([n, label]) => (
-                  <div key={label as string}>
-                    <dt className="font-display text-3xl font-bold">{n as number}</dt>
-                    <dd className="text-sm opacity-80">{label as string}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </section>
-        </div>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h2 className="mb-3 text-xl font-semibold">Корисно знати</h2>
+            <ul className="space-y-3 text-[15px] text-ink-2">
+              <li>
+                <b className="text-ink">Чисельник і знаменник</b> — розклад сам показує заняття поточного тижня. Інший тиждень
+                можна переглянути перемикачем над розкладом.
+              </li>
+              <li>
+                <b className="text-ink">Моя група.</b> На сторінці групи натисніть «Зробити моєю групою» — і тут зʼявлятимуться
+                сьогоднішні пари.
+              </li>
+              <li>
+                <b className="text-ink">Календар у телефоні.</b> Кнопка «У календар» завантажує розклад групи для Google чи Apple
+                Календаря.
+              </li>
+            </ul>
+          </div>
+        </section>
       </main>
       <SiteFooter source={today.settings.source} />
     </>

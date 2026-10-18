@@ -1,13 +1,3 @@
-/*!
- * Віджет розкладу ІТ коледжу Львівської політехніки.
- *
- * Вставка на сторінку (WordPress → блок «Власний HTML»):
- *   <div id="itc-schedule"></div>
- *   <script src="https://<адреса-розкладу>/embed.js" async></script>
- *
- * Необов'язкові атрибути блоку: data-group="КІ-21" — група за замовчуванням.
- * Посилання на конкретну групу: https://itcollege.lviv.ua/schedule/#schedule=g:КІ-21
- */
 (function () {
   "use strict";
   var script = document.currentScript;
@@ -35,7 +25,6 @@
     host.innerHTML = "";
     host.appendChild(iframe);
 
-    // Повноекранний режим: iframe накриває сторінку, а не відкриває інший сайт
     var full = false;
     var saved = { css: "", overflow: "", height: "" };
     function setFull(next) {
@@ -74,7 +63,6 @@
       }
     });
 
-    // Посилання на сторінці коледжу на кшталт <a href="#schedule=g:КІ-21"> перемикають віджет
     window.addEventListener("hashchange", function () {
       var next = fromHash();
       if (next && next !== current) {
@@ -95,7 +83,6 @@
     for (var i = 0; i < hosts.length; i++) mount(hosts[i]);
   }
 
-  // async-скрипт може виконатися раніше, ніж браузер дочитає сторінку
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
 })();

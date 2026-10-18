@@ -71,11 +71,11 @@ export default function Search({ index, size = "hero", autoFocus = false }: { in
     <div className="relative w-full">
       <label
         className={clsx(
-          "flex items-center gap-3 rounded-2xl border border-line bg-surface shadow-card transition focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15",
-          hero ? "h-16 px-5" : "h-11 px-3.5",
+          "flex items-center gap-3 rounded-md border bg-surface transition focus-within:border-brand",
+          hero ? "h-14 border-ink-3/40 px-4" : "h-10 border-line px-3",
         )}
       >
-        <SearchIcon className={clsx("shrink-0 text-ink-3", hero ? "size-6" : "size-4.5")} />
+        <SearchIcon className={clsx("shrink-0 text-ink-3", hero ? "size-5" : "size-4")} />
         <input
           ref={inputRef}
           autoFocus={autoFocus}
@@ -93,22 +93,21 @@ export default function Search({ index, size = "hero", autoFocus = false }: { in
             if (e.key === "Enter") go(hits[active]);
             if (e.key === "Escape") inputRef.current?.blur();
           }}
-          placeholder={hero ? "Група, викладач або аудиторія — напр. КІ-21, Шеремета, 413" : "Пошук групи чи викладача"}
-          className={clsx("w-full bg-transparent outline-none placeholder:text-ink-3", hero ? "text-lg font-medium" : "text-sm")}
+          placeholder={hero ? "Група, прізвище викладача або аудиторія" : "Пошук групи чи викладача"}
+          className={clsx("w-full bg-transparent outline-none placeholder:text-ink-3", hero ? "text-[17px]" : "text-sm")}
           aria-label="Пошук розкладу"
           role="combobox"
           aria-controls="search-results"
           aria-expanded={open && hits.length > 0}
         />
-        <kbd className="hidden shrink-0 rounded-md border border-line px-1.5 py-0.5 text-[11px] font-semibold text-ink-3 sm:block">⌘K</kbd>
       </label>
 
       {open && q && (
-        <div className="fade-up absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
+        <div className="absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-md border border-line bg-surface shadow-lg">
           {hits.length === 0 ? (
-            <p className="px-5 py-6 text-sm text-ink-3">Нічого не знайдено. Спробуйте «КН-21», «Кубик» або «413».</p>
+            <p className="px-4 py-4 text-sm text-ink-3">Нічого не знайдено. Перевірте назву групи, напр. «КН-21».</p>
           ) : (
-            <ul id="search-results" role="listbox" className="p-1.5">
+            <ul id="search-results" role="listbox" className="py-1">
               {hits.map((h, i) => {
                 const Icon = ICON[h.kind];
                 return (
@@ -119,15 +118,13 @@ export default function Search({ index, size = "hero", autoFocus = false }: { in
                       onMouseEnter={() => setActive(i)}
                       onClick={() => go(h)}
                       className={clsx(
-                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left",
+                        "flex w-full items-center gap-3 px-3 py-2 text-left",
                         i === active ? "bg-brand-soft" : "hover:bg-surface-2",
                       )}
                     >
-                      <span className={clsx("grid size-9 shrink-0 place-items-center rounded-lg", h.kind === "group" ? "bg-brand text-brand-ink" : "bg-surface-2 text-ink-2")}>
-                        <Icon className="size-4.5" />
-                      </span>
+                      <Icon className="size-4 shrink-0 text-ink-3" />
                       <span className="min-w-0">
-                        <span className="block truncate font-semibold">{h.title}</span>
+                        <span className="block truncate font-medium">{h.title}</span>
                         <span className="block truncate text-xs text-ink-3">{h.hint}</span>
                       </span>
                     </button>

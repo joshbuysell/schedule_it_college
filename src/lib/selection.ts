@@ -1,6 +1,5 @@
 import type { OpenTarget } from "@/components/Timetable";
 
-/** Вибір у віджеті кодується коротко для URL: g:КІ-21, t:12, r:413 */
 export function encodeSelection(t: OpenTarget) {
   return `${t.kind[0]}:${t.key}`;
 }

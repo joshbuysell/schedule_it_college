@@ -1,7 +1,3 @@
-/**
- * Імпорт розкладу з текстового формату (розшифровка PDF-скану з itcollege.lviv.ua)
- * у базу даних. Формат описано на початку файлу prisma/data/*.txt.
- */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { readFileSync } from "node:fs";
@@ -28,7 +24,6 @@ const BELLS = [
   ["16:30", "17:50"],
 ];
 
-// Повні імена та циклові комісії — зі сторінок циклових комісій на itcollege.lviv.ua
 const TEACHERS: Record<string, [string, string]> = {
   "Вербовська О.В.": ["Вербовська Оксана Василівна", "Загальноосвітньої гуманітарної підготовки"],
   "Вонсовський А.Б.": ["Вонсовський Андрій Броніславович", "Загальноосвітньої гуманітарної підготовки"],
@@ -143,7 +138,6 @@ export function parseSchedule(text: string): ParsedGroup[] {
     const rooms = roomPart.split("/").map((s) => s.trim()).filter(Boolean);
 
     if (teachers.length > 1) {
-      // розділення на підгрупи
       teachers.forEach((t, i) =>
         current!.lessons.push({
           day: +d, pair: +p, week, subgroup: i + 1, subject,
@@ -167,7 +161,6 @@ function groupMeta(name: string) {
   return { course: +m[2], specialty: SPECIALTIES[m[1]] ?? m[1] };
 }
 
-/** Обліковий запис навчальної частини з ADMIN_EMAIL / ADMIN_PASSWORD (оновлює пароль при кожному запуску). */
 async function ensureAdmin() {
   const email = (process.env.ADMIN_EMAIL ?? "admin@itcollege.lviv.ua").trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD;
@@ -191,7 +184,6 @@ async function importSchedule() {
   await prisma.subject.deleteMany();
   await prisma.room.deleteMany();
 
-  // Довідники — пакетно (швидко навіть для віддаленої бази)
   const all = parsed.flatMap((g) => g.lessons);
   const teacherNames = [...new Set(all.map((l) => l.teacher).filter((t): t is string => !!t))];
   const subjectNames = [...new Set(all.map((l) => l.subject))];
@@ -238,7 +230,6 @@ async function importSchedule() {
 
   const settings: Record<string, string> = {
     semesterLabel: "ІІ семестр 2025/2026 н.р.",
-    // понеділок тижня, який вважається чисельником; парність рахується від нього
     numeratorAnchor: "2026-09-07",
     semesterEnd: "2026-12-25",
     source: "https://itcollege.lviv.ua/rozklad-2-2025-2026/",
@@ -254,10 +245,6 @@ async function importSchedule() {
   );
 }
 
-/**
- * npm run db:seed               — повний імпорт (стирає поточний розклад!)
- * tsx prisma/seed.ts --if-empty — імпорт лише в порожню базу (використовується під час розгортання)
- */
 async function main() {
   const ifEmpty = process.argv.includes("--if-empty");
   if (ifEmpty && (await prisma.group.count()) > 0) {

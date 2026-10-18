@@ -8,12 +8,14 @@ import type { Dictionaries } from "@/lib/admin";
 import { conflictKind, findConflicts } from "@/lib/conflicts";
 import { DAYS, normalizeQuery, subjectHue, type BellDTO, type LessonDTO } from "@/lib/schedule";
 import SlotDrawer from "./SlotDrawer";
+import PracticeEditor, { type PracticeDTO } from "./PracticeEditor";
 
 export type Toast = { id: number; text: string; tone?: "ok" | "danger"; action?: { label: string; run: () => void } };
 
 type Props = {
   initialDict: Dictionaries;
   initialLessons: LessonDTO[];
+  initialPractices: PracticeDTO[];
   bells: BellDTO[];
   initialGroup?: string;
   initialSlot?: string;
@@ -21,9 +23,10 @@ type Props = {
 
 const PAIRS = [1, 2, 3, 4, 5, 6];
 
-export default function Editor({ initialDict, initialLessons, bells, initialGroup, initialSlot }: Props) {
+export default function Editor({ initialDict, initialLessons, initialPractices, bells, initialGroup, initialSlot }: Props) {
   const [dict, setDict] = useState(initialDict);
   const [lessons, setLessons] = useState(initialLessons);
+  const [practices, setPractices] = useState(initialPractices);
   const [groupId, setGroupId] = useState(
     () => initialDict.groups.find((g) => g.name === initialGroup)?.id ?? initialDict.groups[0]?.id,
   );
@@ -46,7 +49,6 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), t.action ? 7000 : 3500);
   }, []);
 
-  // Синхронізуємо URL, щоб посиланням можна було поділитися
   useEffect(() => {
     if (!group) return;
     const url = new URL(window.location.href);
@@ -59,7 +61,7 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
   const conflicts = useMemo(() => findConflicts(lessons, sharedRooms), [lessons, sharedRooms]);
   const conflictGroups = useMemo(() => {
     const s = new Map<number, number>();
-    for (const c of conflicts) for (const l of c.lessons) s.set(l.groupId, (s.get(l.groupId) ?? 0) + 1);
+    for (const c of conflicts) for (const id of new Set(c.lessons.map((l) => l.groupId))) s.set(id, (s.get(id) ?? 0) + 1);
     return s;
   }, [conflicts]);
 
@@ -70,7 +72,6 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
     return m;
   }, [lessons]);
 
-  /** Опис накладок для конкретного заняття: з ким і через що конфліктує. */
   const issuesFor = useCallback(
     (l: Pick<LessonDTO, "id" | "day" | "pair" | "week" | "subgroup" | "groupId" | "teacherId" | "roomId"> & Partial<LessonDTO>) => {
       const out: { kind: string; other: LessonDTO }[] = [];
@@ -94,7 +95,7 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
   async function moveLesson(id: number, day: number, pair: number) {
     const l = lessons.find((x) => x.id === id);
     if (!l || (l.day === day && l.pair === pair)) return;
-    upsertLocal({ ...l, day, pair }); // оптимістично
+    upsertLocal({ ...l, day, pair });
     const res = await fetch(`/api/admin/lessons/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -132,7 +133,6 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
 
   return (
     <div className="flex h-[calc(100dvh-3.5rem)]">
-      {/* Список груп */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-line bg-surface lg:flex">
         <div className="border-b border-line p-3">
           <label className="flex h-10 items-center gap-2 rounded-xl border border-line bg-surface-2 px-3 focus-within:border-brand">
@@ -146,7 +146,7 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
             if (!items.length) return null;
             return (
               <div key={course} className="mb-2">
-                <p className="px-2 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-ink-3">{course} курс</p>
+                <p className="px-2 pb-1 pt-2 text-xs font-medium text-ink-3">{course} курс</p>
                 {items.map((g) => (
                   <button
                     key={g.id}
@@ -174,7 +174,6 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
         </div>
       </aside>
 
-      {/* Сітка */}
       <section className="min-w-0 flex-1 overflow-auto bg-surface-2">
         <div className="mx-auto max-w-[1400px] p-4 sm:p-6">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
@@ -192,10 +191,10 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
-              <p className="text-xs font-bold uppercase tracking-wider text-brand">
+              <p className="text-sm text-brand">
                 {group.course} курс · {group.specialty}
               </p>
-              <h1 className="font-display text-3xl font-bold">{group.name}</h1>
+              <h1 className="text-3xl font-bold">{group.name}</h1>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="rounded-xl border border-line bg-surface px-3 py-2">
@@ -233,7 +232,7 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
                 return (
                   <Row key={p}>
                     <div className="border-b border-line bg-surface-2 px-3 py-2">
-                      <div className="font-display text-lg font-bold leading-none">{p}</div>
+                      <div className="text-lg font-bold leading-none">{p}</div>
                       <div className="mt-1 text-[11px] font-semibold tabular-nums text-ink-3">{bell?.start}<br />{bell?.end}</div>
                     </div>
                     {DAYS.map((_, i) => {
@@ -324,6 +323,8 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
               })}
             </div>
           </div>
+
+          <PracticeEditor groupId={group.id} practices={practices} onChange={setPractices} />
         </div>
       </section>
 
@@ -365,7 +366,6 @@ export default function Editor({ initialDict, initialLessons, bells, initialGrou
         />
       )}
 
-      {/* Сповіщення */}
       <div className="pointer-events-none fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-2">
         {toasts.map((t) => (
           <div

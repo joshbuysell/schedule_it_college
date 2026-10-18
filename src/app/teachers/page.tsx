@@ -3,18 +3,17 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { prisma } from "@/lib/db";
+import { byName } from "@/lib/schedule";
 
 export const metadata: Metadata = { title: "Викладачі" };
 export const dynamic = "force-dynamic";
 
 export default async function TeachersPage() {
-  const teachers = await prisma.teacher.findMany({
-    orderBy: { shortName: "asc" },
-    include: { _count: { select: { lessons: true } } },
-  });
-  const sorted = teachers.sort((a, b) => a.shortName.localeCompare(b.shortName, "uk"));
+  const teachers = await prisma.teacher.findMany({ include: { _count: { select: { lessons: true } } } });
+  teachers.sort((a, b) => byName(a.shortName, b.shortName));
+
   const byLetter = new Map<string, typeof teachers>();
-  for (const t of sorted) {
+  for (const t of teachers) {
     const letter = t.shortName[0].toUpperCase();
     byLetter.set(letter, [...(byLetter.get(letter) ?? []), t]);
   }
@@ -22,42 +21,32 @@ export default async function TeachersPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">Викладачі</h1>
-        <p className="mt-2 text-ink-2">{teachers.length} викладачів · натисніть, щоб побачити тижневий розклад</p>
+      <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
+        <h1 className="text-3xl font-semibold tracking-tight">Викладачі</h1>
+        <p className="mt-1 text-ink-2">{teachers.length} викладачів</p>
 
-        <nav className="sticky top-16 z-30 -mx-4 mt-6 flex gap-1 overflow-x-auto bg-bg/90 px-4 py-2 backdrop-blur sm:mx-0 sm:px-0">
+        <nav className="sticky top-12 z-30 -mx-4 mt-5 flex flex-wrap gap-x-1 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur sm:mx-0 sm:px-0">
           {[...byLetter.keys()].map((l) => (
-            <a key={l} href={`#l-${l}`} className="grid size-9 shrink-0 place-items-center rounded-lg border border-line bg-surface text-sm font-bold hover:border-brand hover:text-brand">
+            <a key={l} href={`#l-${l}`} className="rounded px-2 py-1 font-medium text-brand hover:bg-brand hover:text-white">
               {l}
             </a>
           ))}
         </nav>
 
-        <div className="mt-4 space-y-8">
+        <div className="mt-6 columns-1 gap-10 sm:columns-2 lg:columns-3">
           {[...byLetter.entries()].map(([letter, list]) => (
-            <section key={letter} id={`l-${letter}`} className="scroll-mt-32">
-              <h2 className="mb-3 font-display text-2xl font-bold text-ink-3">{letter}</h2>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <section key={letter} id={`l-${letter}`} className="mb-6 scroll-mt-28 break-inside-avoid">
+              <h2 className="mb-1 border-b border-line pb-1 text-lg font-semibold text-brand">{letter}</h2>
+              <ul>
                 {list.map((t) => (
-                  <Link
-                    key={t.id}
-                    href={`/teacher/${t.id}`}
-                    className="group flex items-center gap-3 rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:border-brand"
-                  >
-                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft font-display text-sm font-bold text-brand">
-                      {t.shortName.split(" ")[0][0]}
-                      {t.shortName.split(" ")[1]?.[0]}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate font-bold group-hover:text-brand">{t.fullName ?? t.shortName}</span>
-                      <span className="block truncate text-xs text-ink-3">
-                        {t._count.lessons} занять{t.commission ? ` · ${t.commission}` : ""}
-                      </span>
-                    </span>
-                  </Link>
+                  <li key={t.id}>
+                    <Link href={`/teacher/${t.id}`} className="group flex items-baseline justify-between gap-3 py-1 hover:text-brand">
+                      <span className="group-hover:underline">{t.fullName ?? t.shortName}</span>
+                      <span className="shrink-0 text-sm text-ink-3 tabular-nums">{t._count.lessons}</span>
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           ))}
         </div>

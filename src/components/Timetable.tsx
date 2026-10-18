@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { Coffee } from "lucide-react";
 import {
   DAYS,
   DAYS_SHORT,
@@ -20,7 +19,6 @@ type Mode = "group" | "teacher" | "room";
 
 export type OpenTarget = { kind: Mode; key: string };
 
-/** У віджеті для сайту коледжу посилання не ведуть на інші сторінки, а перемикають вигляд. */
 export const TimetableNav = createContext<((t: OpenTarget) => void) | null>(null);
 
 function NavLink({ to, className, title, children }: { to: OpenTarget; className?: string; title?: string; children: React.ReactNode }) {
@@ -45,7 +43,6 @@ type Props = {
   bells: BellDTO[];
   parity: Exclude<Week, "all">;
   mode: Mode;
-  /** ключ для запам'ятовування вибраної підгрупи */
   storageKey?: string;
   compact?: boolean;
 };
@@ -69,7 +66,6 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
 
   useEffect(() => {
     if (now) setDay(now.weekday <= 5 ? now.weekday : 1);
-    // лише при першому визначенні часу
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now === null]);
 
@@ -109,15 +105,14 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
 
   return (
     <div className="@container">
-      {/* Панель фільтрів */}
       <div className="no-print mb-4 flex flex-wrap items-center gap-2">
         {hasAlternating && (
           <Segmented
             value={week}
             onChange={(v) => setWeek(v as Week)}
             options={[
-              { value: "num", label: "Чисельник", badge: parity === "num" ? "зараз" : undefined },
-              { value: "den", label: "Знаменник", badge: parity === "den" ? "зараз" : undefined },
+              { value: "num", label: "Чисельник", badge: parity === "num" ? (now && now.weekday > 5 ? "з пн" : "зараз") : undefined },
+              { value: "den", label: "Знаменник", badge: parity === "den" ? (now && now.weekday > 5 ? "з пн" : "зараз") : undefined },
               { value: "all", label: "Обидва" },
             ]}
           />
@@ -135,7 +130,6 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
         )}
       </div>
 
-      {/* Мобільний: день за днем */}
       <div className={clsx(!compact && "@3xl:hidden")}>
         <div className="no-print mb-3 grid grid-cols-5 gap-1.5">
           {DAYS_SHORT.map((d, i) => {
@@ -145,12 +139,13 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
               <button
                 key={d}
                 onClick={() => setDay(i + 1)}
+                aria-pressed={day === i + 1}
                 className={clsx(
                   "relative rounded-xl border px-1 py-2 text-center transition",
                   day === i + 1 ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface hover:border-ink-3",
                 )}
               >
-                <span className="block text-sm font-bold">{d}</span>
+                <span className="block text-sm font-semibold">{d}</span>
                 <span className={clsx("block text-[11px]", day === i + 1 ? "opacity-80" : "text-ink-3")}>
                   {count ? `${count} ${count === 1 ? "пара" : count < 5 ? "пари" : "пар"}` : "вихідний"}
                 </span>
@@ -162,9 +157,8 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
         <DayList day={day} pairs={pairs} slot={slot} mode={mode} isNow={isNow} isNext={isNext} />
       </div>
 
-      {/* Десктоп: тижнева сітка */}
       {!compact && (
-        <div className="hidden overflow-hidden rounded-2xl border border-line bg-surface shadow-card @3xl:block">
+        <div className="hidden overflow-hidden rounded-md border border-line bg-surface @3xl:block">
           <div className="grid" style={{ gridTemplateColumns: "88px repeat(5, minmax(0, 1fr))" }}>
             <div className="border-b border-line bg-surface-2" />
             {DAYS.map((d, i) => {
@@ -173,19 +167,19 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
                 <div
                   key={d}
                   className={clsx(
-                    "border-b border-l border-line px-3 py-3 text-sm font-bold",
-                    today ? "bg-brand-soft text-brand" : "bg-surface-2",
+                    "border-b border-l border-line px-3 py-2.5 text-sm font-semibold",
+                    today ? "bg-brand text-white" : "bg-surface-2 text-ink-2",
                   )}
                 >
                   {d}
-                  {today && <span className="ml-2 hidden rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-ink @5xl:inline">сьогодні</span>}
+                  {today && <span className="ml-1.5 hidden font-normal opacity-80 @5xl:inline">· сьогодні</span>}
                 </div>
               );
             })}
             {pairs.map((b) => (
               <Row key={b.pair}>
                 <div className="flex flex-col justify-center border-b border-line bg-surface-2 px-3 py-2">
-                  <span className="font-display text-lg font-bold leading-none">{b.pair}</span>
+                  <span className="text-lg font-semibold leading-none">{b.pair}</span>
                   <span className="mt-1 text-[11px] font-semibold tabular-nums text-ink-3">
                     {b.start}
                     <br />
@@ -231,8 +225,8 @@ function NowTag({ next }: { next?: boolean }) {
   return (
     <span
       className={clsx(
-        "absolute -top-2 right-2 z-10 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
-        next ? "bg-surface text-ink-2 ring-1 ring-line" : "bg-accent text-white",
+        "absolute right-1.5 top-1 z-10 flex items-center gap-1 rounded px-1.5 py-px text-[11px] font-medium",
+        next ? "bg-surface-2 text-ink-3" : "bg-accent text-white",
       )}
     >
       {!next && <span className="live-dot size-1.5 rounded-full bg-white" />}
@@ -259,10 +253,8 @@ function DayList({
   const filled = pairs.filter((b) => slot(day, b.pair).length);
   if (!filled.length) {
     return (
-      <div className="grid place-items-center rounded-2xl border border-dashed border-line bg-surface px-6 py-14 text-center">
-        <Coffee className="mb-3 size-8 text-ink-3" />
-        <p className="font-semibold">Занять немає</p>
-        <p className="text-sm text-ink-3">Вільний день — гарна нагода для курсової 😉</p>
+      <div className="grid place-items-center rounded-md border border-dashed border-line px-6 py-12 text-center">
+        <p className="font-medium text-ink-2">Занять немає</p>
       </div>
     );
   }
@@ -279,14 +271,14 @@ function DayList({
             <li
               key={b.pair}
               className={clsx(
-                "relative flex gap-3 rounded-2xl border bg-surface p-2.5",
+                "relative flex gap-3 rounded-md border bg-surface p-2",
                 nowCell ? "border-accent ring-2 ring-accent/30" : "border-line",
               )}
             >
               {nowCell && <NowTag />}
               {isNext(day, b.pair) && <NowTag next />}
               <div className="w-14 shrink-0 pt-1 text-center">
-                <div className="font-display text-xl font-bold leading-none">{b.pair}</div>
+                <div className="text-xl font-semibold leading-none">{b.pair}</div>
                 <div className="mt-1 text-[11px] font-semibold tabular-nums text-ink-3">
                   {b.start}
                   <br />
@@ -297,7 +289,7 @@ function DayList({
                 {items.length ? (
                   items.map((l) => <LessonCard key={l.id} lesson={l} mode={mode} large />)
                 ) : (
-                  <div className="flex h-full items-center rounded-xl bg-surface-2 px-3 py-3 text-sm text-ink-3">Вікно</div>
+                  <div className="flex h-full items-center px-3 py-2 text-sm text-ink-3">вікно</div>
                 )}
               </div>
             </li>
@@ -315,11 +307,11 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
       style={{ "--h": subjectHue(l.subject) } as React.CSSProperties}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className={clsx("font-bold leading-snug", large ? "text-[15px]" : "text-[13px]")}>{l.subject}</p>
+        <p className={clsx("font-semibold leading-snug", large ? "text-[15px]" : "text-[13px]")}>{l.subject}</p>
         {l.room && mode !== "room" && large && (
           <NavLink
             to={{ kind: "room", key: l.room }}
-            className="shrink-0 rounded-md bg-white/60 px-1.5 py-0.5 text-[11px] font-bold tabular-nums ring-1 ring-black/5 hover:bg-white"
+            className="shrink-0 text-[13px] font-semibold tabular-nums hover:underline"
             title="Аудиторія"
           >
             {l.room}
@@ -328,7 +320,7 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
       </div>
       <div className={clsx("mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 opacity-85", large ? "text-[13px]" : "text-[12px]")}>
         {l.room && mode !== "room" && !large && (
-          <NavLink to={{ kind: "room", key: l.room }} className="rounded bg-white/60 px-1 font-bold tabular-nums ring-1 ring-black/5 hover:bg-white" title="Аудиторія">
+          <NavLink to={{ kind: "room", key: l.room }} className="font-semibold tabular-nums hover:underline" title="Аудиторія">
             {l.room === "кфв" ? "кфв" : `ауд. ${l.room}`}
           </NavLink>
         )}
@@ -355,7 +347,7 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
 
 function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded bg-black/[0.06] px-1.5 py-px text-[10px] font-bold uppercase tracking-wide">
+    <span className="rounded-sm border border-current/25 px-1 text-[10.5px] leading-[1.4]">
       {children}
     </span>
   );
@@ -371,20 +363,21 @@ export function Segmented({
   options: { value: string; label: string; badge?: string }[];
 }) {
   return (
-    <div className="inline-flex max-w-full overflow-x-auto rounded-xl border border-line bg-surface p-1 shadow-card">
+    <div className="inline-flex max-w-full overflow-x-auto rounded-md border border-line bg-surface">
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
+          aria-pressed={value === o.value}
           className={clsx(
-            "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold whitespace-nowrap transition sm:px-3",
-            value === o.value ? "bg-ink text-bg" : "text-ink-2 hover:text-ink",
+            "flex shrink-0 items-center gap-1.5 border-l border-line px-3 py-1.5 text-sm whitespace-nowrap transition first:border-l-0",
+            value === o.value ? "bg-brand font-medium text-white" : "text-ink-2 hover:bg-surface-2 hover:text-ink",
           )}
         >
           {o.label}
           {o.badge && (
-            <span className={clsx("rounded-full px-1.5 text-[10px] font-bold", value === o.value ? "bg-accent text-white" : "bg-accent-soft text-accent")}>
+            <span className={clsx("text-[11px]", value === o.value ? "text-white/75" : "text-accent")}>
               {o.badge}
             </span>
           )}

@@ -14,6 +14,7 @@ export async function POST(req: Request) {
   const parsed = lessonInput.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return bad(parsed.error.issues[0]?.message ?? "Некоректні дані");
   const d = parsed.data;
+  if (!(await prisma.group.findUnique({ where: { id: d.groupId }, select: { id: true } }))) return bad("Групу не знайдено", 404);
 
   const [subject, teacher, room] = await Promise.all([ensureSubject(d.subject), ensureTeacher(d.teacher), ensureRoom(d.room)]);
   const lesson = await prisma.lesson.create({
