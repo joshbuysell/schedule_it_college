@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import ScheduleShell from "@/components/ScheduleShell";
 import Timetable from "@/components/Timetable";
 import { prisma } from "@/lib/db";
-import { getToday, lessonsWhere } from "@/lib/queries";
+import { getToday, getWeekChanges, lessonsWhere } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,8 @@ export default async function RoomPage({ params }: Props) {
   const room = await prisma.room.findUnique({ where: { name } });
   if (!room) notFound();
 
-  const [lessons, today] = await Promise.all([lessonsWhere({ roomId: room.id }), getToday()]);
+  const today = await getToday();
+  const [lessons, changes] = await Promise.all([lessonsWhere({ roomId: room.id }), getWeekChanges(today.weekStart)]);
   const busy = new Set(lessons.map((l) => `${l.day}.${l.pair}`)).size;
   const total = 5 * today.bells.filter((b) => b.pair <= 5).length;
 
@@ -30,7 +31,7 @@ export default async function RoomPage({ params }: Props) {
       title={roomTitle(room.name)}
       subtitle={`Зайнята ${busy} з ${total} пар на тиждень (${Math.round((busy / total) * 100)}%)`}
     >
-      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="room" />
+      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="room" changes={changes} viewId={room.id} weekStart={today.weekStart} />
     </ScheduleShell>
   );
 }

@@ -18,8 +18,8 @@ export async function POST(req: Request) {
   if (!user || !password || !(await bcrypt.compare(password, user.passwordHash))) {
     return NextResponse.json({ error: "Невірний email або пароль" }, { status: 401 });
   }
-  const token = await createSessionToken({ uid: user.id, email: user.email, name: user.name, role: user.role });
-  const res = NextResponse.json({ ok: true, name: user.name });
+  const token = await createSessionToken({ uid: user.id, email: user.email, name: user.name, role: user.role, teacherId: user.teacherId });
+  const res = NextResponse.json({ ok: true, name: user.name, role: user.role });
   res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions);
   return res;
 }

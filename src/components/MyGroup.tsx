@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import clsx from "clsx";
-import { currentPair, kyivNow, matchesWeek, subjectHue, toMinutes, type BellDTO, type LessonDTO, type Week } from "@/lib/schedule";
+import { applyChanges, type ChangeDTO, type DisplayLesson } from "@/lib/changes";
+import { addDays, currentPair, kyivNow, matchesWeek, subjectHue, toMinutes, type BellDTO, type LessonDTO, type Week } from "@/lib/schedule";
 
 export const MY_GROUP_KEY = "schedule:my-group";
 
@@ -39,6 +40,7 @@ export function PinGroupButton({ group }: { group: string }) {
 export function MyGroupCard({ bells, parity }: { bells: BellDTO[]; parity: Exclude<Week, "all"> }) {
   const [group, setGroup] = useState<string | null>(null);
   const [lessons, setLessons] = useState<LessonDTO[] | null>(null);
+  const [extra, setExtra] = useState<{ changes: ChangeDTO[]; weekStart: string; groupId: number } | null>(null);
   const [now, setNow] = useState<ReturnType<typeof kyivNow> | null>(null);
 
   useEffect(() => {
@@ -59,7 +61,11 @@ export function MyGroupCard({ bells, parity }: { bells: BellDTO[]; parity: Exclu
         }
         return r.ok ? r.json() : null;
       })
-      .then((d) => d && setLessons(d.lessons ?? []))
+      .then((d) => {
+        if (!d) return;
+        setLessons(d.lessons ?? []);
+        setExtra({ changes: d.changes ?? [], weekStart: d.weekStart, groupId: d.group?.id });
+      })
       .catch(() => setLessons([]));
   }, [group]);
 
@@ -67,7 +73,10 @@ export function MyGroupCard({ bells, parity }: { bells: BellDTO[]; parity: Exclu
 
   const weekend = now.weekday > 5;
   const day = weekend ? 1 : now.weekday;
-  const today = (lessons ?? []).filter((l) => l.day === day && matchesWeek(l.week, parity)).sort((a, b) => a.pair - b.pair);
+  const date = extra ? addDays(extra.weekStart, day - 1) : null;
+  const withChanges: DisplayLesson[] =
+    extra && date ? applyChanges(lessons ?? [], extra.changes.filter((c) => c.date === date), (l) => l.groupId === extra.groupId) : (lessons ?? []);
+  const today = withChanges.filter((l) => l.day === day && matchesWeek(l.week, parity)).sort((a, b) => a.pair - b.pair);
   const cur = !weekend ? currentPair(bells, now.minutes) : null;
 
   return (
@@ -102,7 +111,12 @@ export function MyGroupCard({ bells, parity }: { bells: BellDTO[]; parity: Exclu
                   <td className="py-2.5 pr-3 align-top">
                     <span className="inline-flex items-center gap-2">
                       <span className="lesson-dot size-2 rounded-full" style={{ "--h": subjectHue(l.subject) } as React.CSSProperties} />
-                      <span className="font-medium">{l.subject}</span>
+                      <span className={clsx("font-medium", (l.change?.kind === "cancelled" || l.change?.kind === "taken") && "line-through")}>{l.subject}</span>
+                      {l.change && (
+                        <span className="rounded border border-accent/50 px-1.5 text-xs text-accent">
+                          {l.change.kind === "cancelled" ? "скасовано" : "заміна"}
+                        </span>
+                      )}
                       {live && <span className="rounded bg-accent px-1.5 text-xs font-medium text-white">зараз</span>}
                     </span>
                     <span className="block text-sm text-ink-3">

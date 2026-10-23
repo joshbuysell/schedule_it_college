@@ -1,21 +1,14 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { Download } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CopyCode from "@/components/CopyCode";
+import { publicUrl } from "@/lib/publicUrl";
 import EmbedPreview from "@/components/EmbedPreview";
 
 export const metadata: Metadata = { title: "Вбудовування на сайт коледжу" };
 export const dynamic = "force-dynamic";
 
-async function publicUrl() {
-  if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL.replace(/\/$/, "");
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 export default async function IntegrationPage() {
   const base = await publicUrl();

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeftRight, LoaderCircle } from "lucide-react";
 import type { BellDTO, Week } from "@/lib/schedule";
 
-type Settings = { semesterLabel: string; numeratorAnchor: string; semesterEnd: string };
+type Settings = { semesterLabel: string; numeratorAnchor: string; semesterEnd: string; approverTitle: string; approverName: string };
 
 export default function SettingsForm({
   settings,
@@ -41,9 +41,9 @@ export default function SettingsForm({
 
   const input = "h-10 rounded-xl border border-line bg-surface px-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/15";
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
+    <main className="mx-auto max-w-3xl px-4 pb-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Налаштування</h1>
+        <span />
         {(busy || msg) && <span className="flex items-center gap-2 text-sm font-semibold text-ok">{busy && <LoaderCircle className="size-4 animate-spin" />}{msg}</span>}
       </div>
 
@@ -74,6 +74,14 @@ export default function SettingsForm({
           <label className="text-sm font-semibold">
             Кінець семестру (для календаря .ics)
             <input type="date" value={s.semesterEnd} onChange={(e) => setS({ ...s, semesterEnd: e.target.value })} className={`${input} mt-1.5 w-full`} />
+          </label>
+          <label className="text-sm font-semibold sm:col-span-2">
+            «Затверджую» на друкованому розкладі — посада
+            <input value={s.approverTitle} onChange={(e) => setS({ ...s, approverTitle: e.target.value })} className={`${input} mt-1.5 w-full`} />
+          </label>
+          <label className="text-sm font-semibold">
+            Імʼя та ПРІЗВИЩЕ
+            <input value={s.approverName} onChange={(e) => setS({ ...s, approverName: e.target.value })} className={`${input} mt-1.5 w-full`} />
           </label>
         </div>
         <button onClick={() => save(s)} className="mt-4 rounded-xl bg-brand px-4 py-2 font-semibold text-brand-ink hover:opacity-90">Зберегти</button>

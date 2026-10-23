@@ -3,9 +3,11 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
+import { applyChanges, type ChangeDTO, type DisplayLesson } from "@/lib/changes";
 import {
   DAYS,
   DAYS_SHORT,
+  addDays,
   currentPair,
   kyivNow,
   matchesWeek,
@@ -45,6 +47,9 @@ type Props = {
   mode: Mode;
   storageKey?: string;
   compact?: boolean;
+  changes?: ChangeDTO[];
+  viewId?: number;
+  weekStart?: string;
 };
 
 function useNow() {
@@ -58,7 +63,7 @@ function useNow() {
   return now;
 }
 
-export default function Timetable({ lessons, bells, parity, mode, storageKey, compact }: Props) {
+export default function Timetable({ lessons, bells, parity, mode, storageKey, compact, changes, viewId, weekStart }: Props) {
   const now = useNow();
   const [week, setWeek] = useState<Week>(parity);
   const [subgroup, setSubgroup] = useState(0);
@@ -87,13 +92,24 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
   const hasSubgroups = mode === "group" && lessons.some((l) => l.subgroup > 0);
   const hasAlternating = lessons.some((l) => l.week !== "all");
 
+  const thisWeek = week === parity;
+  const display: DisplayLesson[] = useMemo(() => {
+    if (!thisWeek || !changes?.length || viewId == null) return lessons;
+    return applyChanges(lessons, changes, (l) =>
+      mode === "group" ? l.groupId === viewId : mode === "teacher" ? l.teacherId === viewId : l.roomId === viewId,
+    );
+  }, [lessons, changes, viewId, mode, thisWeek]);
+  const changeCount = display.filter((l) => l.change).length;
+
   const visible = useMemo(
     () =>
-      lessons.filter(
+      display.filter(
         (l) => matchesWeek(l.week, week) && (subgroup === 0 || l.subgroup === 0 || l.subgroup === subgroup),
       ),
-    [lessons, week, subgroup],
+    [display, week, subgroup],
   );
+  const dateOf = (d: number) =>
+    weekStart && thisWeek ? new Date(addDays(weekStart, d - 1) + "T12:00:00Z").toLocaleDateString("uk-UA", { day: "numeric", month: "numeric", timeZone: "UTC" }) : null;
 
   const maxPair = Math.max(4, ...lessons.map((l) => l.pair));
   const pairs = bells.filter((b) => b.pair <= maxPair);
@@ -127,6 +143,11 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
               { value: "2", label: "2 підгрупа" },
             ]}
           />
+        )}
+        {thisWeek && changeCount > 0 && (
+          <span className="rounded-md border border-accent/40 bg-accent-soft px-3 py-1.5 text-sm text-accent">
+            Цього тижня є зміни: {changeCount}
+          </span>
         )}
       </div>
 
@@ -172,7 +193,7 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
                   )}
                 >
                   {d}
-                  {today && <span className="ml-1.5 hidden font-normal opacity-80 @5xl:inline">· сьогодні</span>}
+                  {dateOf(i + 1) && <span className="ml-1.5 font-normal opacity-70">{dateOf(i + 1)}</span>}
                 </div>
               );
             })}
@@ -245,7 +266,7 @@ function DayList({
 }: {
   day: number;
   pairs: BellDTO[];
-  slot: (d: number, p: number) => LessonDTO[];
+  slot: (d: number, p: number) => DisplayLesson[];
   mode: Mode;
   isNow: (d: number, p: number) => boolean;
   isNext: (d: number, p: number) => boolean;
@@ -299,15 +320,28 @@ function DayList({
   );
 }
 
-export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode: Mode; large?: boolean }) {
+export function LessonCard({ lesson: l, mode, large }: { lesson: DisplayLesson; mode: Mode; large?: boolean }) {
   const linkCls = "underline-offset-2 hover:underline";
+  const ch = l.change;
+  const struck = ch?.kind === "cancelled" || ch?.kind === "taken";
   return (
     <div
-      className={clsx("lesson flex-1 rounded-lg px-2.5 py-2", large && "px-3 py-2.5")}
+      className={clsx(
+        "lesson flex-1 rounded-lg px-2.5 py-2",
+        large && "px-3 py-2.5",
+        struck && "opacity-60",
+        ch && !struck && "outline-2 outline-accent",
+      )}
       style={{ "--h": subjectHue(l.subject) } as React.CSSProperties}
     >
+      {ch && (
+        <p className="mb-1 text-[11px] font-semibold text-accent">
+          {ch.kind === "cancelled" ? "Скасовано" : ch.kind === "taken" ? "Заміна" : ch.kind === "added" ? "Додаткова пара" : "Заміна"}
+          {ch.note && <span className="font-normal text-ink-2"> · {ch.note}</span>}
+        </p>
+      )}
       <div className="flex items-start justify-between gap-2">
-        <p className={clsx("font-semibold leading-snug", large ? "text-[15px]" : "text-[13px]")}>{l.subject}</p>
+        <p className={clsx("font-semibold leading-snug", large ? "text-[15px]" : "text-[13px]", struck && "line-through")}>{l.subject}</p>
         {l.room && mode !== "room" && large && (
           <NavLink
             to={{ kind: "room", key: l.room }}
@@ -341,6 +375,8 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: LessonDTO; mode
           </span>
         )}
       </div>
+      {ch?.was && <p className="mt-1 text-[11px] text-ink-3">замість: {ch.was}</p>}
+      {ch?.by && <p className="mt-1 text-[11px] text-ink-3">тепер: {ch.by}</p>}
     </div>
   );
 }

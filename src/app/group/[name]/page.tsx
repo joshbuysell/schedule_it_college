@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { CalendarPlus } from "lucide-react";
 import ScheduleShell from "@/components/ScheduleShell";
+import CalendarMenu from "@/components/CalendarMenu";
 import { actionClass } from "@/components/ui";
+import { QrCode } from "lucide-react";
 import Timetable from "@/components/Timetable";
 import { PinGroupButton } from "@/components/MyGroup";
 import { prisma } from "@/lib/db";
-import { getToday, lessonsWhere } from "@/lib/queries";
+import { activeSemesterId, getToday, getWeekChanges, lessonsWhere } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GroupPage({ params }: Props) {
   const name = decodeURIComponent((await params).name);
-  const group = await prisma.group.findUnique({ where: { name }, include: { practices: true } });
+  const group = await prisma.group.findUnique({ where: { name }, include: { practices: { where: { semesterId: await activeSemesterId() } } } });
   if (!group) notFound();
 
-  const [lessons, today] = await Promise.all([lessonsWhere({ groupId: group.id }), getToday()]);
+  const today = await getToday();
+  const [lessons, changes] = await Promise.all([lessonsWhere({ groupId: group.id }), getWeekChanges(today.weekStart, { groupId: group.id })]);
   const updated = group.updatedAt.toLocaleDateString("uk-UA", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Kyiv" });
 
   return (
@@ -38,17 +40,14 @@ export default async function GroupPage({ params }: Props) {
       actions={
         <>
           <PinGroupButton group={group.name} />
-          <a
-            href={`/api/v1/groups/${encodeURIComponent(group.name)}/ics`}
-            className={actionClass}
-            title="Завантажте .ics і відкрийте в Google / Apple Календарі"
-          >
-            <CalendarPlus className="size-4" /> У календар
+          <CalendarMenu path={`/api/v1/groups/${encodeURIComponent(group.name)}/ics`} />
+          <a href={`/poster?group=${encodeURIComponent(group.name)}`} target="_blank" className={actionClass}>
+            <QrCode className="size-4" /> QR для аудиторії
           </a>
         </>
       }
     >
-      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="group" storageKey={group.name} />
+      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="group" storageKey={group.name} changes={changes} viewId={group.id} weekStart={today.weekStart} />
 
       {group.practices.length > 0 && (
         <section className="mt-8">

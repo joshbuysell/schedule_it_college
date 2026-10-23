@@ -130,3 +130,21 @@ export function translit(q: string) {
 }
 
 export const byName = (a: string, b: string) => a.localeCompare(b, "uk", { numeric: true });
+
+export function addDays(ymd: string, days: number) {
+  const d = new Date(ymd + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+export function weekdayOf(ymd: string) {
+  return ((new Date(ymd + "T00:00:00Z").getUTCDay() + 6) % 7) + 1;
+}
+
+export function relevantWeekStart(ymd: string, weekday: number) {
+  return addDays(ymd, weekday > 5 ? 8 - weekday : 1 - weekday);
+}
+
+export function formatDate(ymd: string, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" }) {
+  return new Date(ymd + "T12:00:00Z").toLocaleDateString("uk-UA", { ...opts, timeZone: "UTC" });
+}

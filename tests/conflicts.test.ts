@@ -38,3 +38,26 @@ describe("findConflicts", () => {
     expect(result[0].lessons).toHaveLength(3);
   });
 });
+
+describe("потоки", () => {
+  it("спільна пара кількох груп з одним викладачем, предметом і аудиторією — не накладка", () => {
+    expect(conflictKind(lesson({}), lesson({ groupId: 2 }), new Set())).toBeNull();
+  });
+
+  it("той самий викладач з різними предметами — накладка", () => {
+    expect(conflictKind(lesson({}), lesson({ groupId: 2, subjectId: 9, roomId: 2 }), new Set())).toBe("teacher");
+  });
+});
+
+import { computeWorkload } from "../src/lib/workload";
+
+describe("навантаження", () => {
+  it("рахує пари, години та потоки один раз", () => {
+    const rows = computeWorkload([
+      lesson({ groupId: 1, group: "КІ-11" }),
+      lesson({ groupId: 2, group: "КІ-12" }),
+      lesson({ day: 2, week: "num", group: "КІ-11" }),
+    ]);
+    expect(rows[0]).toMatchObject({ pairs: 1.5, hours: 3, groups: ["КІ-11", "КІ-12"] });
+  });
+});

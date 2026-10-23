@@ -7,6 +7,7 @@ import Timetable, { TimetableNav, type OpenTarget } from "@/components/Timetable
 import TodayBadge from "@/components/TodayBadge";
 import { layoutSwap, normalizeQuery, translit, type BellDTO, type LessonDTO, type Week } from "@/lib/schedule";
 import { encodeSelection } from "@/lib/selection";
+import type { ChangeDTO } from "@/lib/changes";
 import type { SearchIndex } from "@/lib/queries";
 
 const STORAGE_KEY = "itc-schedule:last";
@@ -18,13 +19,18 @@ type Props = {
   semesterLabel: string;
   initial: OpenTarget | null;
   initialLessons: LessonDTO[] | null;
+  initialView: ViewExtra;
 };
 
 function post(msg: Record<string, unknown>) {
   if (window.parent !== window) window.parent.postMessage({ source: "itc-schedule", ...msg }, "*");
 }
 
-export default function EmbedApp({ index, bells, parity, semesterLabel, initial, initialLessons }: Props) {
+type ViewExtra = { changes: ChangeDTO[]; viewId: number | null; weekStart: string };
+
+export default function EmbedApp({ index, bells, parity, semesterLabel, initial, initialLessons, initialView }: Props) {
+  const [view, setView] = useState<ViewExtra>(initialView);
+  const fallbackWeek = initialView.weekStart;
   const [selected, setSelected] = useState<OpenTarget | null>(initial);
   const [lessons, setLessons] = useState<LessonDTO[] | null>(initialLessons);
   const [loading, setLoading] = useState(false);
@@ -74,8 +80,13 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
     setLoading(false);
     if (!data) return false;
     setLessons(data.lessons);
+    setView({
+      changes: data.changes ?? [],
+      weekStart: data.weekStart ?? fallbackWeek,
+      viewId: data.group?.id ?? data.teacher?.id ?? data.room?.id ?? null,
+    });
     return true;
-  }, []);
+  }, [fallbackWeek]);
 
   const open = useCallback(
     async (t: OpenTarget | null, how: "push" | "back" | "reset" = "reset") => {
@@ -158,7 +169,7 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
               <div className="flex flex-wrap gap-2">
                 {selected.kind === "group" && (
                   <a
-                    href={`/api/v1/groups/${encodeURIComponent(selected.key)}/ics`}
+                    href={`/api/v1/groups/${encodeURIComponent(selected.key)}/ics?download`}
                     className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm font-semibold hover:border-brand hover:text-brand"
                   >
                     <CalendarPlus className="size-4" /> У календар
@@ -181,6 +192,9 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
             ) : (
               <Timetable
                 lessons={lessons}
+                changes={view.changes}
+                viewId={view.viewId ?? undefined}
+                weekStart={view.weekStart}
                 bells={bells}
                 parity={parity}
                 mode={selected.kind}

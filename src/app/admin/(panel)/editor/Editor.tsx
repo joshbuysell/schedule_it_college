@@ -18,12 +18,15 @@ type Props = {
   initialPractices: PracticeDTO[];
   bells: BellDTO[];
   initialGroup?: string;
+  semesters: { id: number; title: string; active: boolean }[];
+  semesterId: number;
   initialSlot?: string;
 };
 
 const PAIRS = [1, 2, 3, 4, 5, 6];
 
-export default function Editor({ initialDict, initialLessons, initialPractices, bells, initialGroup, initialSlot }: Props) {
+export default function Editor({ initialDict, initialLessons, initialPractices, bells, initialGroup, initialSlot, semesters, semesterId }: Props) {
+  const semester = semesters.find((s) => s.id === semesterId);
   const [dict, setDict] = useState(initialDict);
   const [lessons, setLessons] = useState(initialLessons);
   const [practices, setPractices] = useState(initialPractices);
@@ -53,10 +56,12 @@ export default function Editor({ initialDict, initialLessons, initialPractices, 
     if (!group) return;
     const url = new URL(window.location.href);
     url.searchParams.set("group", group.name);
+    if (semester && !semester.active) url.searchParams.set("semester", String(semester.id));
+    else url.searchParams.delete("semester");
     if (slot) url.searchParams.set("slot", `${slot.day}.${slot.pair}`);
     else url.searchParams.delete("slot");
     window.history.replaceState(null, "", url);
-  }, [group, slot]);
+  }, [group, slot, semester]);
 
   const conflicts = useMemo(() => findConflicts(lessons, sharedRooms), [lessons, sharedRooms]);
   const conflictGroups = useMemo(() => {
@@ -176,6 +181,31 @@ export default function Editor({ initialDict, initialLessons, initialPractices, 
 
       <section className="min-w-0 flex-1 overflow-auto bg-surface-2">
         <div className="mx-auto max-w-[1400px] p-4 sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-ink-3">Семестр:</span>
+            <select
+              value={semesterId}
+              onChange={(e) => {
+                const url = new URL(window.location.href);
+                url.searchParams.set("semester", e.target.value);
+                url.searchParams.delete("slot");
+                window.location.href = url.toString();
+              }}
+              className="h-8 rounded-md border border-line bg-surface px-2"
+            >
+              {semesters.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                  {s.active ? " (опубліковано)" : " (чернетка)"}
+                </option>
+              ))}
+            </select>
+            {semester && !semester.active && (
+              <span className="rounded-md bg-accent-soft px-2 py-1 text-accent">
+                Чернетка: студенти поки бачать інший семестр. Опублікувати можна в «Налаштуваннях».
+              </span>
+            )}
+          </div>
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
             <div>
               <select
@@ -324,7 +354,7 @@ export default function Editor({ initialDict, initialLessons, initialPractices, 
             </div>
           </div>
 
-          <PracticeEditor groupId={group.id} practices={practices} onChange={setPractices} />
+          <PracticeEditor groupId={group.id} semesterId={semesterId} practices={practices} onChange={setPractices} />
         </div>
       </section>
 
@@ -338,10 +368,12 @@ export default function Editor({ initialDict, initialLessons, initialPractices, 
           allLessons={lessons}
           dict={dict}
           focusLesson={focusLesson}
+          semesterId={semesterId}
           issuesFor={issuesFor}
           onClose={() => setSlot(null)}
-          onSaved={(l, created) => {
+          onSaved={(l, created, extra) => {
             upsertLocal(l);
+            extra?.forEach(upsertLocal);
             const issues = issuesFor(l);
             toast(issues.length ? { text: `Збережено, але є накладка з ${issues[0].other.group}`, tone: "danger" } : { text: created ? "Пару додано" : "Зміни збережено", tone: "ok" });
             refreshDict();
@@ -356,7 +388,7 @@ export default function Editor({ initialDict, initialLessons, initialPractices, 
                   const res = await fetch("/api/admin/lessons", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ groupId: l.groupId, day: l.day, pair: l.pair, week: l.week, subgroup: l.subgroup, subject: l.subject, teacher: l.teacher, room: l.room }),
+                    body: JSON.stringify({ semesterId, groupId: l.groupId, day: l.day, pair: l.pair, week: l.week, subgroup: l.subgroup, subject: l.subject, teacher: l.teacher, room: l.room }),
                   });
                   if (res.ok) upsertLocal((await res.json()).lesson);
                 },

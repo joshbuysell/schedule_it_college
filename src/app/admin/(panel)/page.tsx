@@ -40,9 +40,17 @@ export default async function Dashboard() {
           <p className="text-sm text-brand">{settings.semesterLabel}</p>
           <h1 className="text-3xl font-bold">Огляд розкладу</h1>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <Link href="/admin/print" className="inline-flex items-center rounded-md border border-line bg-surface px-4 py-2.5 font-medium hover:border-brand hover:text-brand">
+          Друк розкладу
+        </Link>
+        <a href="/poster?all" target="_blank" className="inline-flex items-center rounded-md border border-line bg-surface px-4 py-2.5 font-medium hover:border-brand hover:text-brand">
+          QR-плакати для груп
+        </a>
         <Link href="/admin/editor" className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 font-semibold text-brand-ink hover:opacity-90">
           Відкрити редактор <ArrowRight className="size-4" />
         </Link>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-4">

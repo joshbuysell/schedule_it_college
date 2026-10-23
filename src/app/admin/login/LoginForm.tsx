@@ -20,7 +20,8 @@ export default function LoginForm({ next }: { next: string }) {
       body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
     });
     if (res.ok) {
-      router.replace(next);
+      const { role } = await res.json();
+      router.replace(role === "teacher" ? (next.startsWith("/cabinet") ? next : "/cabinet") : next.startsWith("/admin") ? next : "/admin");
       router.refresh();
     } else {
       setError((await res.json().catch(() => ({}))).error ?? "Помилка входу");
@@ -32,8 +33,8 @@ export default function LoginForm({ next }: { next: string }) {
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <label className="block text-sm font-semibold">
-        Email
-        <input name="email" type="email" required autoComplete="username" className={input} />
+        Логін або email
+        <input name="email" type="text" required autoComplete="username" autoCapitalize="none" spellCheck={false} className={input} />
       </label>
       <label className="block text-sm font-semibold">
         Пароль

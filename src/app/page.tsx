@@ -5,13 +5,18 @@ import Search from "@/components/Search";
 import TodayBadge from "@/components/TodayBadge";
 import GroupMatrix from "@/components/GroupMatrix";
 import { MyGroupCard } from "@/components/MyGroup";
-import { getSearchIndex, getToday } from "@/lib/queries";
+import { getChanges, getSearchIndex, getToday } from "@/lib/queries";
+import ChangesToday from "@/components/ChangesToday";
+import { addDays, weekdayOf } from "@/lib/schedule";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const [today, index, groups] = await Promise.all([getToday(), getSearchIndex(), prisma.group.findMany()]);
+  let next = addDays(today.ymd, 1);
+  while (weekdayOf(next) > 5) next = addDays(next, 1);
+  const changes = await getChanges({ status: "approved", date: { in: [today.ymd, next] } });
 
   return (
     <>
@@ -29,6 +34,7 @@ export default async function Home() {
         </section>
 
         <MyGroupCard bells={today.bells} parity={today.parity} />
+        <ChangesToday changes={changes} today={today.ymd} />
 
         <section className="mt-10">
           <div className="mb-3 flex items-baseline justify-between gap-4">

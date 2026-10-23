@@ -9,13 +9,14 @@ datasource db {
 }
 
 model Group {
-  id         Int        @id @default(autoincrement())
-  name       String     @unique
-  course     Int
-  specialty  String
-  lessons    Lesson[]
-  practices  Practice[]
-  updatedAt  DateTime   @updatedAt
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  course    Int
+  specialty String
+  lessons   Lesson[]
+  practices Practice[]
+  changes   Change[]
+  updatedAt DateTime   @updatedAt
 }
 
 model Teacher {
@@ -25,12 +26,15 @@ model Teacher {
   commission String?
   degree     String?
   lessons    Lesson[]
+  changes    Change[]
+  user       User?
 }
 
 model Subject {
   id      Int      @id @default(autoincrement())
   name    String   @unique
   lessons Lesson[]
+  changes Change[]
 }
 
 model Room {
@@ -38,36 +42,77 @@ model Room {
   name    String   @unique
   shared  Boolean  @default(false)
   lessons Lesson[]
+  changes Change[]
+}
+
+model Semester {
+  id              Int        @id @default(autoincrement())
+  title           String
+  numeratorAnchor String
+  endDate         String
+  active          Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  lessons         Lesson[]
+  practices       Practice[]
 }
 
 model Lesson {
-  id        Int      @id @default(autoincrement())
-  groupId   Int
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  day       Int
-  pair      Int
-  week      String   @default("all")
-  subgroup  Int      @default(0)
-  subjectId Int
-  subject   Subject  @relation(fields: [subjectId], references: [id])
-  teacherId Int?
-  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
-  roomId    Int?
-  room      Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  semesterId Int
+  semester   Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  groupId    Int
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  day        Int
+  pair       Int
+  week       String   @default("all")
+  subgroup   Int      @default(0)
+  subjectId  Int
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  teacherId  Int?
+  teacher    Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  roomId     Int?
+  room       Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  updatedAt  DateTime @updatedAt
 
-  @@index([groupId, day, pair])
+  @@index([semesterId, groupId, day, pair])
   @@index([teacherId])
   @@index([roomId])
 }
 
+model Change {
+  id        Int      @id @default(autoincrement())
+  date      String
+  groupId   Int
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  pair      Int
+  subgroup  Int      @default(0)
+  cancelled Boolean  @default(false)
+  subjectId Int?
+  subject   Subject? @relation(fields: [subjectId], references: [id])
+  teacherId Int?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  roomId    Int?
+  room      Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  note      String?
+  status    String   @default("approved")
+  authorId  Int?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([date])
+  @@index([status])
+  @@index([groupId, date])
+}
+
 model Practice {
-  id       Int    @id @default(autoincrement())
-  groupId  Int
-  group    Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  title    String
-  dates    String
-  teachers String
+  id         Int      @id @default(autoincrement())
+  semesterId Int
+  semester   Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  groupId    Int
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title      String
+  dates      String
+  teachers   String
 }
 
 model Bell {
@@ -82,9 +127,34 @@ model Setting {
 }
 
 model User {
-  id           Int    @id @default(autoincrement())
-  email        String @unique
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
   name         String
   passwordHash String
-  role         String @default("editor")
+  role         String   @default("editor")
+  teacherId    Int?     @unique
+  teacher      Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  changes      Change[]
+}
+
+model AuditLog {
+  id       Int      @id @default(autoincrement())
+  at       DateTime @default(now())
+  userId   Int?
+  userName String
+  action   String
+  summary  String
+
+  @@index([at])
+}
+
+model TelegramSub {
+  chatId    String   @id
+  groupId   Int?
+  teacherId Int?
+  morning   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([groupId])
+  @@index([teacherId])
 }

@@ -3,7 +3,11 @@ import { SignJWT, jwtVerify } from "jose";
 export const SESSION_COOKIE = "schedule_session";
 const MAX_AGE = 60 * 60 * 12;
 
-export type Session = { uid: number; email: string; name: string; role: string };
+export type Session = { uid: number; email: string; name: string; role: string; teacherId: number | null };
+
+export const ROLES = { admin: "Адміністратор", editor: "Навчальна частина", teacher: "Викладач" } as const;
+export type Role = keyof typeof ROLES;
+export const isStaff = (role: string) => role === "admin" || role === "editor";
 
 function secret() {
   const s = process.env.AUTH_SECRET;

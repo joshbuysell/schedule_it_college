@@ -18,3 +18,5 @@ export const DICT = {
 
 export type DictKind = keyof typeof DICT;
 export const isDictKind = (k: string): k is DictKind => k in DICT;
+
+export const DICT_LABEL: Record<DictKind, string> = { teachers: "Викладачі", subjects: "Дисципліни", rooms: "Аудиторії", groups: "Групи" };

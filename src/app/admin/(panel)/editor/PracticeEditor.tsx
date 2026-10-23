@@ -7,13 +7,14 @@ export type PracticeDTO = { id: number; groupId: number; title: string; dates: s
 
 type Props = {
   groupId: number;
+  semesterId: number;
   practices: PracticeDTO[];
   onChange: (next: PracticeDTO[]) => void;
 };
 
 const input = "h-9 w-full rounded border border-transparent bg-transparent px-2 outline-none hover:border-line focus:border-brand focus:bg-surface";
 
-export default function PracticeEditor({ groupId, practices, onChange }: Props) {
+export default function PracticeEditor({ groupId, semesterId, practices, onChange }: Props) {
   const mine = practices.filter((p) => p.groupId === groupId);
   const [error, setError] = useState("");
 
@@ -22,7 +23,7 @@ export default function PracticeEditor({ groupId, practices, onChange }: Props) 
     const res = await fetch(p.id ? `/api/admin/practices/${p.id}` : "/api/admin/practices", {
       method: p.id ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ groupId, title: p.title, dates: p.dates, teachers: p.teachers }),
+      body: JSON.stringify({ groupId, semesterId, title: p.title, dates: p.dates, teachers: p.teachers }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {

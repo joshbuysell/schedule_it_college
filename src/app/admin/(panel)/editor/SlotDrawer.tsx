@@ -20,7 +20,8 @@ type Props = {
   focusLesson: number | null;
   issuesFor: (l: IssueProbe) => Issue[];
   onClose: () => void;
-  onSaved: (l: LessonDTO, created: boolean) => void;
+  onSaved: (l: LessonDTO, created: boolean, extra?: LessonDTO[]) => void;
+  semesterId: number;
   onDeleted: (l: LessonDTO) => void;
 };
 
@@ -70,8 +71,8 @@ export default function SlotDrawer(props: Props) {
             initialSubgroup={suggestion.subgroup}
             autoFocus
             onCancel={lessons.length ? () => setAdding(false) : undefined}
-            onSaved={(l, created) => {
-              props.onSaved(l, created);
+            onSaved={(l, created, extra) => {
+              props.onSaved(l, created, extra);
               setAdding(false);
             }}
           />
@@ -102,6 +103,7 @@ function LessonForm({
   autoFocus,
   initialWeek = "all",
   initialSubgroup = 0,
+  semesterId,
 }: Props & {
   lesson: LessonDTO | null;
   autoFocus?: boolean;
@@ -116,7 +118,10 @@ function LessonForm({
   const [subgroup, setSubgroup] = useState(lesson?.subgroup ?? initialSubgroup);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [also, setAlso] = useState<number[]>([]);
+  const [showAlso, setShowAlso] = useState(false);
   const ref = useRef<HTMLFormElement>(null);
+  const streamCandidates = dict.groups.filter((g) => g.id !== group.id && g.course === group.course);
 
   useEffect(() => {
     if (autoFocus && lesson) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -181,7 +186,7 @@ function LessonForm({
     if (!subject.trim()) return setError("Вкажіть дисципліну");
     setSaving(true);
     setError("");
-    const body = { groupId: group.id, day: slot.day, pair: slot.pair, week, subgroup, subject, teacher: teacher || null, room: room || null };
+    const body = { groupId: group.id, day: slot.day, pair: slot.pair, week, subgroup, subject, teacher: teacher || null, room: room || null, ...(!lesson && { alsoGroupIds: also, semesterId }) };
     const res = await fetch(lesson ? `/api/admin/lessons/${lesson.id}` : "/api/admin/lessons", {
       method: lesson ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -190,7 +195,7 @@ function LessonForm({
     setSaving(false);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return setError(data.error ?? "Не вдалося зберегти");
-    onSaved(data.lesson, !lesson);
+    onSaved(data.lesson, !lesson, data.extra);
   }
 
   async function remove() {
@@ -232,6 +237,31 @@ function LessonForm({
           <span className="mb-1 block text-sm font-medium text-ink-2">Хто навчається</span>
           <Pills value={String(subgroup)} onChange={(v) => setSubgroup(+v)} options={[["0", "Уся група"], ["1", "1 підгрупа"], ["2", "2 підгрупа"]]} />
         </div>
+        {!lesson && (
+          <div>
+            <button type="button" onClick={() => setShowAlso(!showAlso)} className="text-sm text-brand hover:underline">
+              {also.length ? `Потік: ще ${also.length} груп` : "Спільна пара з іншими групами (потік)"}
+            </button>
+            {showAlso && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {streamCandidates.map((g) => {
+                  const on = also.includes(g.id);
+                  return (
+                    <button
+                      type="button"
+                      key={g.id}
+                      onClick={() => setAlso(on ? also.filter((x) => x !== g.id) : [...also, g.id])}
+                      aria-pressed={on}
+                      className={on ? "rounded border border-brand bg-brand px-2 py-0.5 text-sm text-white" : "rounded border border-line px-2 py-0.5 text-sm hover:border-brand"}
+                    >
+                      {g.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {issues.length > 0 && (

@@ -178,6 +178,7 @@ async function importSchedule() {
   const parsed = parseSchedule(text);
 
   await prisma.lesson.deleteMany();
+  await prisma.change.deleteMany();
   await prisma.practice.deleteMany();
   await prisma.group.deleteMany();
   await prisma.teacher.deleteMany();
@@ -205,9 +206,16 @@ async function importSchedule() {
   const roomIds = await ids(await prisma.room.findMany(), (t) => t.name);
   const groupIds = await ids(await prisma.group.findMany(), (t) => t.name);
 
+  const semester =
+    (await prisma.semester.findFirst({ where: { active: true } })) ??
+    (await prisma.semester.create({
+      data: { title: "ІІ семестр 2025/2026 н.р.", numeratorAnchor: "2026-09-07", endDate: "2026-12-25", active: true },
+    }));
+
   await prisma.lesson.createMany({
     data: parsed.flatMap((g) =>
       g.lessons.map((l) => ({
+        semesterId: semester.id,
         groupId: groupIds.get(g.name)!,
         day: l.day,
         pair: l.pair,
@@ -220,7 +228,7 @@ async function importSchedule() {
     ),
   });
   await prisma.practice.createMany({
-    data: parsed.flatMap((g) => g.practices.map((p) => ({ groupId: groupIds.get(g.name)!, ...p }))),
+    data: parsed.flatMap((g) => g.practices.map((p) => ({ semesterId: semester.id, groupId: groupIds.get(g.name)!, ...p }))),
   });
 
   await prisma.bell.createMany({

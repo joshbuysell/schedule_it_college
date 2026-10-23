@@ -12,9 +12,14 @@ function subgroupsOverlap(a: number, b: number) {
   return a === 0 || b === 0 || a === b;
 }
 
+export function isStream(a: LessonDTO, b: LessonDTO) {
+  return a.teacherId != null && a.teacherId === b.teacherId && a.subjectId === b.subjectId && a.roomId === b.roomId;
+}
+
 export function conflictKind(a: LessonDTO, b: LessonDTO, sharedRooms: Set<number>): Conflict["kind"] | null {
   if (a.id === b.id || a.day !== b.day || a.pair !== b.pair || !weeksOverlap(a.week, b.week)) return null;
   if (a.groupId === b.groupId) return subgroupsOverlap(a.subgroup, b.subgroup) ? "group" : null;
+  if (isStream(a, b)) return null;
   if (a.teacherId && a.teacherId === b.teacherId) return "teacher";
   if (a.roomId && a.roomId === b.roomId && !sharedRooms.has(a.roomId)) return "room";
   return null;

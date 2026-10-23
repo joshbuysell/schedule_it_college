@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Poppins } from "next/font/google";
 import "./globals.css";
+import RegisterSW from "@/components/RegisterSW";
 
 const poppins = Poppins({ variable: "--font-poppins", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700"] });
@@ -8,7 +9,8 @@ const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"
 export const metadata: Metadata = {
   title: { default: "Розклад занять — ІТ коледж Львівської політехніки", template: "%s · Розклад ІТ коледжу" },
   description: "Розклад занять груп і викладачів Фахового коледжу інформаційних технологій НУ «Львівська політехніка».",
-  icons: { icon: "/logo-lit.jpg" },
+  icons: { icon: "/logo-lit.jpg", apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Розклад ІТК", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -18,7 +20,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="uk">
-      <body className={`${poppins.variable} ${montserrat.variable} min-h-dvh antialiased`}>{children}</body>
+      <body className={`${poppins.variable} ${montserrat.variable} min-h-dvh antialiased`}>
+        {children}
+        <RegisterSW />
+      </body>
     </html>
   );
 }

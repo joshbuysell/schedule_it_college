@@ -5,7 +5,8 @@ import { DAYS, type Week } from "../src/lib/schedule";
 const prisma = new PrismaClient();
 
 async function main() {
-  const rows = await prisma.lesson.findMany({ include: { subject: true, teacher: true, room: true, group: true } });
+  const semester = await prisma.semester.findFirst({ where: { active: true } });
+  const rows = await prisma.lesson.findMany({ where: { semesterId: semester?.id }, include: { subject: true, teacher: true, room: true, group: true } });
   const lessons = rows.map((l) => ({
     id: l.id, day: l.day, pair: l.pair, week: l.week as Week, subgroup: l.subgroup,
     subject: l.subject.name, subjectId: l.subjectId, teacher: l.teacher?.shortName ?? null, teacherId: l.teacherId,

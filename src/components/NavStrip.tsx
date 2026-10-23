@@ -9,6 +9,7 @@ const ITEMS = [
   { href: "/", label: "Головна" },
   { href: "/groups", label: "Групи" },
   { href: "/teachers", label: "Викладачі" },
+  { href: "/rooms", label: "Аудиторії" },
   { href: "/#bells", label: "Дзвінки" },
   { href: "/integration", label: "Для сайту коледжу" },
 ];
@@ -16,7 +17,7 @@ const ITEMS = [
 export default function NavStrip() {
   const path = usePathname();
   const active = (href: string) =>
-    href === "/" ? path === "/" : !href.includes("#") && path.startsWith(href) || (href === "/groups" && path.startsWith("/group/")) || (href === "/teachers" && path.startsWith("/teacher/"));
+    href === "/" ? path === "/" : !href.includes("#") && path.startsWith(href) || (href === "/groups" && path.startsWith("/group/")) || (href === "/teachers" && path.startsWith("/teacher/")) || (href === "/rooms" && path.startsWith("/room/"));
 
   return (
     <nav className="no-print sticky top-0 z-40 bg-brand text-brand-ink shadow-[0_6px_20px_-12px_rgba(37,43,107,0.6)]">

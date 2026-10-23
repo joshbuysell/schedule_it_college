@@ -3,12 +3,13 @@ import { prisma } from "@/lib/db";
 import { toDTO } from "@/lib/queries";
 import { bad, ensureRoom, ensureSubject, ensureTeacher } from "@/lib/admin";
 import { lessonInput } from "@/lib/lessonInput";
+import { audit, lessonLabel } from "@/lib/audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: Request, { params }: Ctx) {
   const id = Number((await params).id);
-  const existing = await prisma.lesson.findUnique({ where: { id } });
+  const existing = await prisma.lesson.findUnique({ where: { id }, include: { subject: true, teacher: true, room: true, group: true } });
   if (!existing) return bad("Заняття не знайдено", 404);
 
   const parsed = lessonInput.partial().safeParse(await req.json().catch(() => null));
@@ -27,13 +28,16 @@ export async function PATCH(req: Request, { params }: Ctx) {
     include: { subject: true, teacher: true, room: true, group: true },
   });
   await prisma.group.update({ where: { id: lesson.groupId }, data: { updatedAt: new Date() } });
-  return NextResponse.json({ lesson: toDTO(lesson) });
+  const after = toDTO(lesson);
+  await audit("lesson.update", `Змінено ${lessonLabel(toDTO(existing))} → ${lessonLabel(after)}`);
+  return NextResponse.json({ lesson: after });
 }
 
 export async function DELETE(_req: Request, { params }: Ctx) {
   const id = Number((await params).id);
-  const lesson = await prisma.lesson.delete({ where: { id } }).catch(() => null);
+  const lesson = await prisma.lesson.delete({ where: { id }, include: { subject: true, teacher: true, room: true, group: true } }).catch(() => null);
   if (!lesson) return bad("Заняття не знайдено", 404);
+  await audit("lesson.delete", `Видалено ${lessonLabel(toDTO(lesson))}`);
   await prisma.group.update({ where: { id: lesson.groupId }, data: { updatedAt: new Date() } });
   return NextResponse.json({ ok: true });
 }

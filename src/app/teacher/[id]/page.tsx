@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ScheduleShell from "@/components/ScheduleShell";
+import CalendarMenu from "@/components/CalendarMenu";
 import Timetable from "@/components/Timetable";
 import { prisma } from "@/lib/db";
-import { getToday, lessonsWhere } from "@/lib/queries";
+import { getToday, getWeekChanges, lessonsWhere } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,8 @@ export default async function TeacherPage({ params }: Props) {
   const teacher = await load((await params).id);
   if (!teacher) notFound();
 
-  const [lessons, today] = await Promise.all([lessonsWhere({ teacherId: teacher.id }), getToday()]);
+  const today = await getToday();
+  const [lessons, changes] = await Promise.all([lessonsWhere({ teacherId: teacher.id }), getWeekChanges(today.weekStart)]);
   const groups = [...new Set(lessons.map((l) => l.group))].sort((a, b) => a.localeCompare(b, "uk"));
   const load_ = lessons.reduce((s, l) => s + (l.week === "all" ? 1 : 0.5), 0);
 
@@ -36,8 +38,9 @@ export default async function TeacherPage({ params }: Props) {
           .filter(Boolean)
           .join(" · ")
       }
+      actions={<CalendarMenu path={`/api/v1/teachers/${teacher.id}/ics`} />}
     >
-      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="teacher" />
+      <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="teacher" changes={changes} viewId={teacher.id} weekStart={today.weekStart} />
       {groups.length > 0 && (
         <p className="mt-6 text-sm text-ink-3">
           Групи: <span className="font-semibold text-ink-2">{groups.join(", ")}</span>
