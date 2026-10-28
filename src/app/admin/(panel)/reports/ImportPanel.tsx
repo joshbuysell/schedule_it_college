@@ -45,7 +45,7 @@ export default function ImportPanel({ semesters }: { semesters: { id: number; ti
       <h2 className="text-lg font-semibold">Імпорт розкладу з Excel</h2>
       <p className="mt-1 text-sm text-ink-2">
         Заповніть{" "}
-        <a href="/api/admin/export/template" className="text-brand hover:underline">
+        <a href="/api/admin/export/template" className="text-brand underline underline-offset-2 hover:no-underline">
           шаблон
         </a>{" "}
         (або поточний розклад, вивантажений у Excel) і завантажте файл. Заняття груп із файлу у вибраному семестрі будуть замінені.

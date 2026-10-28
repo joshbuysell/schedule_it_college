@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Printer, Trash2, UserPlus } from "lucide-react";
+import { KeyRound, LoaderCircle, Printer, Trash2, UserPlus } from "lucide-react";
 
 type User = { id: number; email: string; name: string; role: string; teacherId: number | null };
 type Teacher = { id: number; shortName: string; fullName: string | null };
@@ -16,6 +16,7 @@ export default function Users({ users, teachers, me, canManage }: { users: User[
   const [error, setError] = useState("");
   const [form, setForm] = useState({ email: "", name: "", role: "editor", teacherId: "" });
   const [filter, setFilter] = useState("");
+  const [bulk, setBulk] = useState(false);
   const free = teachers.filter((t) => !users.some((u) => u.teacherId === t.id));
   const teacherName = (id: number | null) => teachers.find((t) => t.id === id)?.shortName;
 
@@ -33,7 +34,9 @@ export default function Users({ users, teachers, me, canManage }: { users: User[
 
   async function createAllTeachers() {
     if (!confirm(`Створити облікові записи для ${free.length} викладачів?`)) return;
+    setBulk(true);
     const data = await call("/api/admin/users/teachers", "POST");
+    setBulk(false);
     if (data) setCreds(data.created);
   }
 
@@ -69,8 +72,20 @@ export default function Users({ users, teachers, me, canManage }: { users: User[
           <p className="mt-1 text-ink-2">Навчальна частина редагує розклад, викладачі подають заявки на зміни через свій кабінет.</p>
         </div>
         {canManage && free.length > 0 && (
-          <button onClick={createAllTeachers} className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 font-medium text-white hover:bg-brand-deep">
-            <UserPlus className="size-4" /> Створити доступи для всіх викладачів ({free.length})
+          <button
+            onClick={createAllTeachers}
+            disabled={bulk}
+            className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 font-medium text-white hover:bg-brand-deep disabled:opacity-70"
+          >
+            {bulk ? (
+              <>
+                <LoaderCircle className="size-4 animate-spin" /> Створюємо доступи… це може тривати до хвилини
+              </>
+            ) : (
+              <>
+                <UserPlus className="size-4" /> Створити доступи для всіх викладачів ({free.length})
+              </>
+            )}
           </button>
         )}
       </div>
@@ -146,7 +161,7 @@ export default function Users({ users, teachers, me, canManage }: { users: User[
       )}
 
       <div className="no-print mt-6">
-        <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Пошук" className={`${input} mb-2 w-64`} />
+        <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Пошук" aria-label="Пошук користувачів" className={`${input} mb-2 w-64`} />
         <div className="overflow-x-auto rounded-md border border-line bg-surface">
           <table className="w-full text-sm">
             <thead className="bg-surface-2 text-left text-ink-3">
@@ -165,7 +180,7 @@ export default function Users({ users, teachers, me, canManage }: { users: User[
                   <td className="px-3 py-2 font-mono text-xs">{u.email}</td>
                   <td className="px-3 py-2">
                     {canManage && u.id !== me ? (
-                      <select value={u.role} onChange={(e) => call(`/api/admin/users/${u.id}`, "PATCH", { role: e.target.value })} className="rounded border border-line bg-surface px-1 py-0.5">
+                      <select aria-label={`Роль: ${u.name}`} value={u.role} onChange={(e) => call(`/api/admin/users/${u.id}`, "PATCH", { role: e.target.value })} className="rounded border border-line bg-surface px-1 py-0.5">
                         {Object.entries(ROLE_LABEL).map(([k, v]) => (
                           <option key={k} value={k}>
                             {v}

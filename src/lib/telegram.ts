@@ -34,7 +34,7 @@ export async function dayText(target: Target, date: string) {
     const b = bells.find((x) => x.pair === l.pair);
     const who = target.kind === "group" ? l.teacher : l.group;
     const body = [l.subject, who, l.room && `ауд. ${l.room}`, l.subgroup ? `${l.subgroup} пгр` : null].filter(Boolean).map((x) => esc(String(x))).join(" · ");
-    const mark = l.change ? (l.change.kind === "cancelled" ? " ❌ скасовано" : l.change.kind === "taken" ? " ↪︎ заміна" : " 🔄 заміна") : "";
+    const mark = l.change ? (l.change.kind === "cancelled" ? " ❌ скасовано" : l.change.kind === "taken" ? " ↪︎ заміна" : l.change.kind === "room" ? " 🚪 інша аудиторія" : " 🔄 заміна") : "";
     return `${l.pair}. ${b?.start ?? ""} ${isStruck(l) ? `<s>${body}</s>` : body}${mark}${l.change?.note ? `\n   <i>${esc(l.change.note)}</i>` : ""}`;
   });
   return `${title} · ${parity === "num" ? "чисельник" : "знаменник"}\n\n${lines.join("\n")}`;

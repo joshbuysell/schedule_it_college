@@ -24,7 +24,7 @@ export type ChangeDTO = {
 };
 
 export type ChangeMark = {
-  kind: "replaced" | "added" | "cancelled" | "taken";
+  kind: "replaced" | "room" | "added" | "cancelled" | "taken";
   note: string | null;
   was?: string;
   by?: string;
@@ -67,11 +67,13 @@ export function applyChanges(base: LessonDTO[], changes: ChangeDTO[], inView: (l
         roomId: c.roomId,
         group: c.group,
         groupId: c.groupId,
-        change: {
-          kind: c.replaces.length ? "replaced" : "added",
-          note: c.note,
-          was: c.replaces.length ? c.replaces.map(describeLesson).join("; ") : undefined,
-        },
+        change: roomOnly(c)
+          ? { kind: "room", note: c.note, was: c.replaces.map((r) => (r.room ? `ауд. ${r.room}` : "без аудиторії")).join(", ") }
+          : {
+              kind: c.replaces.length ? "replaced" : "added",
+              note: c.note,
+              was: c.replaces.length ? c.replaces.map(describeLesson).join("; ") : undefined,
+            },
       });
     }
   }

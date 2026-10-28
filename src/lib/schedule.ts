@@ -30,7 +30,7 @@ export const WEEK_LABEL: Record<Week, string> = {
 
 export const TZ = "Europe/Kyiv";
 
-export function kyivNow(date = new Date()) {
+export function kyivNow(date = process.env.E2E_NOW ? new Date(process.env.E2E_NOW) : new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: TZ,
     year: "numeric",

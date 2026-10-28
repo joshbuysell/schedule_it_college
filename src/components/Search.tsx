@@ -98,6 +98,8 @@ export default function Search({ index, size = "hero", autoFocus = false }: { in
           aria-label="Пошук розкладу"
           spellCheck={false}
           autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
           role="combobox"
           aria-controls="search-results"
           aria-expanded={open && hits.length > 0}

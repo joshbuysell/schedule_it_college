@@ -31,6 +31,11 @@ describe("applyChanges", () => {
     expect(out[0]).toMatchObject({ group: "КІ-21", change: { kind: "replaced" } });
   });
 
+  it("зміна лише аудиторії позначена як «інша аудиторія»", () => {
+    const out = applyChanges([math], [change({ teacher: "Кузар Х.В.", teacherId: 10, room: "211" })], (l) => l.groupId === 5);
+    expect(out[0]).toMatchObject({ room: "211", change: { kind: "room", was: "ауд. 401" } });
+  });
+
   it("скасована пара лишається, але позначена", () => {
     const out = applyChanges([math], [change({ cancelled: true, subject: null, teacher: null, teacherId: null })], (l) => l.groupId === 5);
     expect(out).toHaveLength(1);

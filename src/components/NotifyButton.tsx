@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Bell, BellRing } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Bell, BellRing, Share } from "lucide-react";
 import clsx from "clsx";
-import { api, currentSubscription, pushSupport, subscribe, type PushState } from "@/lib/pushClient";
+import { api, currentSubscription, isIOS, preparePush, pushErrorText, pushSupport, subscribe, type PushReady, type PushState } from "@/lib/pushClient";
+import { useDismiss } from "./useDismiss";
 
 type Props = { target: string; group?: string; teacherId?: number; name: string };
 
@@ -15,12 +16,15 @@ export default function NotifyButton({ target, group, teacherId, name }: Props) 
   const [error, setError] = useState("");
   const [embedded, setEmbedded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const ready = useRef<Promise<PushReady> | null>(null);
 
   useEffect(() => {
     setEmbedded(window.top !== window.self);
     if (new URLSearchParams(location.search).has("notify")) setOpen(true);
     const support = pushSupport();
     if (support !== "off") return setState(support);
+    ready.current = preparePush();
+    ready.current.catch(() => (ready.current = null));
     currentSubscription()
       .then(async (sub) => {
         if (!sub) return setState("off");
@@ -32,24 +36,19 @@ export default function NotifyButton({ target, group, teacherId, name }: Props) 
       .catch(() => setState("off"));
   }, [target]);
 
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
+  useDismiss(ref, open, useCallback(() => setOpen(false), []));
 
   async function save(nextMorning = morning) {
     setBusy(true);
     setError("");
     try {
-      if ((await Notification.requestPermission()) !== "granted") return setState("denied");
-      const sub = await subscribe();
+      const sub = await subscribe(await (ready.current ??= preparePush()));
       await api("POST", "/api/v1/push", { subscription: sub.toJSON(), group, teacherId, morning: nextMorning });
       setMorning(nextMorning);
       setState("on");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Не вдалося увімкнути сповіщення");
+      if (Notification.permission === "denied") setState("denied");
+      else setError(pushErrorText(e));
     } finally {
       setBusy(false);
     }
@@ -92,15 +91,15 @@ export default function NotifyButton({ target, group, teacherId, name }: Props) 
         {on ? "Сповіщення увімкнено" : "Сповіщення"}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded-md border border-line bg-surface p-4 text-sm shadow-lg max-sm:fixed max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:shadow-2xl">
+        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded-md border border-line bg-surface p-4 text-sm shadow-lg max-sm:fixed max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] max-sm:w-auto max-sm:shadow-2xl">
           {state === "ios-install" ? (
             <>
               <p className="font-medium">На iPhone сповіщення працюють із головного екрана</p>
               <ol className="mt-2 list-decimal space-y-1 pl-5 text-ink-2">
                 <li>
-                  Натисніть «Поділитися» <span aria-hidden>⎋</span> у Safari.
+                  У Safari натисніть «Поділитися» <Share className="inline size-4 align-[-2px]" aria-hidden /> (на iOS 26 — у меню «⋯» поруч з адресою).
                 </li>
-                <li>Виберіть «На початковий екран».</li>
+                <li>Виберіть «На початковий екран» — він може ховатися під «Показати більше».</li>
                 <li>Відкрийте розклад зі значка й натисніть «Сповіщення».</li>
               </ol>
               <p className="mt-2 text-ink-3">Потрібна iOS 16.4 або новіша.</p>
@@ -109,7 +108,9 @@ export default function NotifyButton({ target, group, teacherId, name }: Props) 
             <p className="text-ink-2">Цей браузер не підтримує сповіщення. Підпишіться на розклад через «У календар»: заміни теж зʼявлятимуться там.</p>
           ) : state === "denied" ? (
             <p className="text-ink-2">
-              Сповіщення для цього сайту заблоковано в браузері. Дозвольте їх у налаштуваннях сайту (значок ліворуч від адреси) й оновіть сторінку.
+              {isIOS()
+                ? "Сповіщення вимкнено. Увімкніть їх у Параметрах → Сповіщення → Розклад ІТК і відкрийте розклад знову."
+                : "Сповіщення для цього сайту заблоковано в браузері. Дозвольте їх у налаштуваннях сайту (значок ліворуч від адреси) й оновіть сторінку."}
             </p>
           ) : (
             <>

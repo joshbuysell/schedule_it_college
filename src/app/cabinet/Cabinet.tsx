@@ -99,12 +99,11 @@ export default function Cabinet({ teacher, lessons, changes, own, bells, anchor,
             aria-pressed={d === date}
             className={clsx(
               "rounded-md border px-1 py-2 text-center",
-              d === date ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand",
-              d < today && d !== date && "opacity-50",
+              d === date ? "border-brand bg-brand text-white" : d < today ? "border-line bg-surface-2 text-ink-3 hover:border-brand" : "border-line bg-surface hover:border-brand",
             )}
           >
             <span className="block text-sm font-semibold">{DAYS_SHORT[weekdayOf(d) - 1]}</span>
-            <span className="block text-xs opacity-80">{formatDate(d, { day: "numeric", month: "numeric" })}</span>
+            <span className="block text-xs">{formatDate(d, { day: "numeric", month: "numeric" })}</span>
           </button>
         ))}
       </div>

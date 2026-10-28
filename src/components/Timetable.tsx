@@ -193,7 +193,7 @@ export default function Timetable({ lessons, bells, parity, mode, storageKey, co
                   )}
                 >
                   {d}
-                  {dateOf(i + 1) && <span className="ml-1.5 font-normal opacity-70">{dateOf(i + 1)}</span>}
+                  {dateOf(i + 1) && <span className={clsx("ml-1.5 font-normal", today ? "text-white/85" : "text-ink-3")}>{dateOf(i + 1)}</span>}
                 </div>
               );
             })}
@@ -329,14 +329,14 @@ export function LessonCard({ lesson: l, mode, large }: { lesson: DisplayLesson; 
       className={clsx(
         "lesson flex-1 rounded-lg px-2.5 py-2",
         large && "px-3 py-2.5",
-        struck && "opacity-60",
+        struck && "grayscale",
         ch && !struck && "outline-2 outline-accent",
       )}
       style={{ "--h": subjectHue(l.subject) } as React.CSSProperties}
     >
       {ch && (
         <p className="mb-1 text-[11px] font-semibold text-accent">
-          {ch.kind === "cancelled" ? "Скасовано" : ch.kind === "taken" ? "Заміна" : ch.kind === "added" ? "Додаткова пара" : "Заміна"}
+          {ch.kind === "cancelled" ? "Скасовано" : ch.kind === "room" ? "Інша аудиторія" : ch.kind === "added" ? "Додаткова пара" : "Заміна"}
           {ch.note && <span className="font-normal text-ink-2"> · {ch.note}</span>}
         </p>
       )}

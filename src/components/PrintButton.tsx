@@ -7,7 +7,7 @@ export default function PrintButton() {
   return (
     <button
       onClick={() => window.print()}
-      className={actionClass}
+      className={`${actionClass} max-sm:hidden`}
     >
       <Printer className="size-4" /> Друк
     </button>

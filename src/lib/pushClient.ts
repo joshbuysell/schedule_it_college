@@ -4,7 +4,7 @@ export type PushState = "loading" | "unsupported" | "ios-install" | "denied" | "
 
 export function pushSupport(): PushState {
   if (typeof window === "undefined") return "loading";
-  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const ios = isIOS();
   const standalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as { standalone?: boolean }).standalone === true;
   if (!("serviceWorker" in navigator && "PushManager" in window && "Notification" in window)) return ios && !standalone ? "ios-install" : "unsupported";
   if (Notification.permission === "denied") return "denied";
@@ -26,17 +26,34 @@ export async function currentSubscription() {
   return reg.pushManager.getSubscription();
 }
 
-export async function subscribe() {
-  const reg = await registration();
-  const { publicKey } = await fetch("/api/v1/push").then((r) => r.json());
-  const opts = { userVisibleOnly: true, applicationServerKey: keyBytes(publicKey) };
+export type PushReady = { reg: ServiceWorkerRegistration; key: Uint8Array<ArrayBuffer> };
+
+export async function preparePush(): Promise<PushReady> {
+  const [reg, { publicKey }] = await Promise.all([registration(), fetch("/api/v1/push").then((r) => r.json())]);
+  return { reg, key: keyBytes(publicKey) };
+}
+
+// Safari на iPhone дозволяє підписатися лише прямо з обробника натискання, тому реєстрацію й ключ готуємо заздалегідь.
+export async function subscribe({ reg, key }: PushReady) {
+  const opts = { userVisibleOnly: true, applicationServerKey: key };
   try {
     return await reg.pushManager.subscribe(opts);
-  } catch {
-    await (await reg.pushManager.getSubscription())?.unsubscribe();
+  } catch (e) {
+    const old = await reg.pushManager.getSubscription();
+    if (!old) throw e;
+    await old.unsubscribe();
     return reg.pushManager.subscribe(opts);
   }
 }
+
+export function pushErrorText(e: unknown) {
+  if (Notification.permission === "granted") return "Телефон не зміг підписатися на сповіщення. Спробуйте пізніше, а поки підпишіться на розклад через «У календар».";
+  if (e instanceof DOMException && e.name === "NotAllowedError") return "Дозвіл на сповіщення не надано. Натисніть «Увімкнути» ще раз і виберіть «Дозволити».";
+  if (e instanceof Error && /[а-яіїєґ]/i.test(e.message)) return e.message;
+  return "Не вдалося увімкнути сповіщення. Перевірте інтернет і спробуйте ще раз.";
+}
+
+export const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 export async function api(method: "POST" | "DELETE", path: string, body: unknown) {
   const res = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

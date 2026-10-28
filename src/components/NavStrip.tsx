@@ -21,7 +21,7 @@ export default function NavStrip() {
     href === "/" ? path === "/" : !href.includes("#") && path.startsWith(href) || (href === "/groups" && path.startsWith("/group/")) || (href === "/teachers" && path.startsWith("/teacher/")) || (href === "/rooms" && path.startsWith("/room/"));
 
   return (
-    <nav className="no-print sticky top-0 z-40 bg-brand text-brand-ink shadow-[0_6px_20px_-12px_rgba(37,43,107,0.6)]">
+    <nav className="no-print safe-sticky sticky top-0 z-40 bg-brand text-brand-ink shadow-[0_6px_20px_-12px_rgba(37,43,107,0.6)]">
       <div className="mx-auto flex max-w-7xl items-center px-2 sm:px-4">
         <ul className="flex flex-1 items-center overflow-x-auto [scrollbar-width:none]">
           {ITEMS.map((i) => (

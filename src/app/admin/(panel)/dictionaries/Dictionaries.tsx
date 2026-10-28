@@ -79,13 +79,13 @@ export default function Dictionaries({ data }: { data: Record<Kind, Row[]> }) {
               onClick={() => setKind(k)}
               className={clsx("rounded-lg px-3 py-1.5 text-sm font-semibold", kind === k ? "bg-ink text-bg" : "text-ink-2 hover:text-ink")}
             >
-              {CONFIG[k].title} <span className="opacity-60">{data[k].length}</span>
+              {CONFIG[k].title} <span className={kind === k ? "opacity-80" : "font-normal text-ink-3"}>{data[k].length}</span>
             </button>
           ))}
         </div>
         <label className="flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-3">
           <Search className="size-4 text-ink-3" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Фільтр" className="bg-transparent text-sm outline-none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Фільтр" aria-label="Фільтр" className="bg-transparent text-sm outline-none" />
         </label>
         {msg && <span className={clsx("text-sm font-semibold", msg.tone === "ok" ? "text-ok" : "text-danger")}>{msg.text}</span>}
       </div>
@@ -155,10 +155,11 @@ function EditableRow({
       {fields.map((f) => (
         <td key={f.key} className="px-2 py-1.5">
           {f.type === "bool" ? (
-            <input type="checkbox" checked={!!values[f.key]} onChange={(e) => setValues({ ...values, [f.key]: e.target.checked })} className="size-4 accent-[var(--brand)]" />
+            <input type="checkbox" aria-label={f.label} checked={!!values[f.key]} onChange={(e) => setValues({ ...values, [f.key]: e.target.checked })} className="size-4 accent-[var(--brand)]" />
           ) : (
             <input
               value={String(values[f.key] ?? "")}
+              aria-label={f.label}
               type={f.type === "number" ? "number" : "text"}
               placeholder={row ? "" : f.label}
               onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}

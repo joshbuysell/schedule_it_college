@@ -17,7 +17,7 @@
   --accent-soft: #fff1e7;
   --ok: #0f7a4f;
   --warn: #c2410c;
-  --danger: #d12b3a;
+  --danger: #c22a38;
   --danger-soft: #fdecee;
   --shadow: 0 1px 2px rgba(28, 31, 61, 0.05);
   --lesson-l: 0.975;
@@ -57,6 +57,24 @@
 
 html {
   background: var(--bg);
+}
+
+/* Застосунок з головного екрана iPhone малює сторінку під рядком стану. */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    height: env(safe-area-inset-top);
+    background: var(--surface);
+  }
+  .safe-sticky {
+    top: env(safe-area-inset-top);
+  }
 }
 
 body {

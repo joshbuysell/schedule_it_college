@@ -43,7 +43,7 @@ export default async function GroupPage({ params }: Props) {
           <PinGroupButton group={group.name} />
           <NotifyButton target={`g:${group.id}`} group={group.name} name={`група ${group.name}`} />
           <CalendarMenu path={`/api/v1/groups/${encodeURIComponent(group.name)}/ics`} />
-          <a href={`/poster?group=${encodeURIComponent(group.name)}`} target="_blank" className={actionClass}>
+          <a href={`/poster?group=${encodeURIComponent(group.name)}`} target="_blank" className={`${actionClass} max-sm:hidden`}>
             <QrCode className="size-4" /> QR для аудиторії
           </a>
         </>

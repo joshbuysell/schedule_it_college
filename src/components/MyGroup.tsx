@@ -121,7 +121,7 @@ export function MyGroupCard({ bells, parity }: { bells: BellDTO[]; parity: Exclu
                       <span className={clsx("font-medium", (l.change?.kind === "cancelled" || l.change?.kind === "taken") && "line-through")}>{l.subject}</span>
                       {l.change && (
                         <span className="rounded border border-accent/50 px-1.5 text-xs text-accent">
-                          {l.change.kind === "cancelled" ? "скасовано" : "заміна"}
+                          {l.change.kind === "cancelled" ? "скасовано" : l.change.kind === "room" ? "інша аудиторія" : "заміна"}
                         </span>
                       )}
                       {live && <span className="rounded bg-accent px-1.5 text-xs font-medium text-white">зараз</span>}

@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-dvh flex-col">
       <header className="no-print sticky top-0 z-40 bg-brand text-brand-ink shadow-[0_6px_20px_-12px_rgba(37,43,107,0.6)]">
         <div className="flex h-14 items-center gap-4 px-4">
-          <Link href="/admin" className="flex items-center gap-2.5">
+          <Link href="/admin" aria-label="Редактор розкладу — огляд" className="flex items-center gap-2.5">
             <Image src="/logo-lit.jpg" alt="" width={32} height={32} className="rounded-full ring-2 ring-white/30" />
             <span className="hidden text-sm font-semibold 2xl:block">Редактор розкладу</span>
           </Link>

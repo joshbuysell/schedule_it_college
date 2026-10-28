@@ -184,6 +184,7 @@ export default function Editor({ initialDict, initialLessons, initialPractices, 
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
             <span className="text-ink-3">Семестр:</span>
             <select
+              aria-label="Семестр"
               value={semesterId}
               onChange={(e) => {
                 const url = new URL(window.location.href);

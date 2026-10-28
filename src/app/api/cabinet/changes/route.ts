@@ -20,6 +20,7 @@ export async function POST(req: Request) {
   const parsed = teacherRequest.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return bad(parsed.error.issues[0]?.message ?? "Некоректні дані");
   const r = parsed.data;
+  if (r.date < (await getToday()).ymd) return bad("Ця дата вже минула");
 
   const lessons = await teacherLessonsOn(session.teacherId, r.date);
   const lesson = lessons.find((l) => l.groupId === r.groupId && l.pair === r.pair && l.subgroup === r.subgroup);

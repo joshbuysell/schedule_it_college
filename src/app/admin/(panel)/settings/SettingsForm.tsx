@@ -97,6 +97,7 @@ export default function SettingsForm({
                 <input
                   key={k}
                   type="time"
+                  aria-label={`${b.pair} пара, ${k === "start" ? "початок" : "кінець"}`}
                   value={b[k]}
                   onChange={(e) => setBells(bells.map((x, j) => (j === i ? { ...x, [k]: e.target.value } : x)))}
                   className={input}

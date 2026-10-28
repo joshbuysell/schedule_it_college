@@ -53,3 +53,9 @@ presentation/
 
 # резервні копії бази (npm run db:backup)
 /backups/
+
+# наскрізні тести (npm run e2e)
+/.next-e2e/
+/test-results/
+/playwright-report/
+/e2e/.auth/

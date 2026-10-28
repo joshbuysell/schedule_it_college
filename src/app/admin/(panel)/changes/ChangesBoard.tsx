@@ -198,7 +198,7 @@ export default function ChangesBoard(props: Props) {
           <button onClick={() => setDate(addDays(date, -1))} className="rounded-md border border-line bg-surface p-2 hover:border-brand" aria-label="Попередній день">
             <ChevronLeft className="size-4" />
           </button>
-          <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} className="h-9 rounded-md border border-line bg-surface px-2" />
+          <input type="date" aria-label="Дата" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} className="h-9 rounded-md border border-line bg-surface px-2" />
           <button onClick={() => setDate(addDays(date, 1))} className="rounded-md border border-line bg-surface p-2 hover:border-brand" aria-label="Наступний день">
             <ChevronRight className="size-4" />
           </button>
@@ -271,7 +271,7 @@ export default function ChangesBoard(props: Props) {
               ))}
             </div>
             {tab === "group" ? (
-              <select value={groupId ?? ""} onChange={(e) => { setGroupId(e.target.value ? +e.target.value : null); setDraft(null); }} className="h-9 rounded-md border border-line bg-surface px-2">
+              <select aria-label="Група" value={groupId ?? ""} onChange={(e) => { setGroupId(e.target.value ? +e.target.value : null); setDraft(null); }} className="h-9 rounded-md border border-line bg-surface px-2">
                 <option value="">Виберіть групу</option>
                 {dict.groups.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -280,7 +280,7 @@ export default function ChangesBoard(props: Props) {
                 ))}
               </select>
             ) : (
-              <select value={teacherId ?? ""} onChange={(e) => { setTeacherId(e.target.value ? +e.target.value : null); setDraft(null); }} className="h-9 rounded-md border border-line bg-surface px-2">
+              <select aria-label="Відсутній викладач" value={teacherId ?? ""} onChange={(e) => { setTeacherId(e.target.value ? +e.target.value : null); setDraft(null); }} className="h-9 rounded-md border border-line bg-surface px-2">
                 <option value="">Виберіть викладача</option>
                 {dict.teachers.map((t) => (
                   <option key={t.id} value={t.id}>
