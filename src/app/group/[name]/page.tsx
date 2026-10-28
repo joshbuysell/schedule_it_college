@@ -6,6 +6,7 @@ import { actionClass } from "@/components/ui";
 import { QrCode } from "lucide-react";
 import Timetable from "@/components/Timetable";
 import { PinGroupButton } from "@/components/MyGroup";
+import NotifyButton from "@/components/NotifyButton";
 import { prisma } from "@/lib/db";
 import { activeSemesterId, getToday, getWeekChanges, lessonsWhere } from "@/lib/queries";
 
@@ -40,6 +41,7 @@ export default async function GroupPage({ params }: Props) {
       actions={
         <>
           <PinGroupButton group={group.name} />
+          <NotifyButton target={`g:${group.id}`} group={group.name} name={`група ${group.name}`} />
           <CalendarMenu path={`/api/v1/groups/${encodeURIComponent(group.name)}/ics`} />
           <a href={`/poster?group=${encodeURIComponent(group.name)}`} target="_blank" className={actionClass}>
             <QrCode className="size-4" /> QR для аудиторії

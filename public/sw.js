@@ -1,4 +1,5 @@
-const CACHE = "schedule-v1";
+const CACHE = "schedule-v2";
+const DEV = new URL(location.href).searchParams.has("dev");
 const OFFLINE_ROUTES = ["/"];
 
 self.addEventListener("install", (e) => {
@@ -21,7 +22,7 @@ function isPublic(url) {
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = new URL(req.url);
-  if (req.method !== "GET" || url.origin !== location.origin || !isPublic(url)) return;
+  if (DEV || req.method !== "GET" || url.origin !== location.origin || !isPublic(url)) return;
 
   if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname.endsWith(".jpg")) {
     e.respondWith(
@@ -51,4 +52,30 @@ self.addEventListener("fetch", (e) => {
         .catch(() => caches.match(req).then((hit) => hit || caches.match("/"))),
     );
   }
+});
+
+self.addEventListener("push", (e) => {
+  const data = e.data ? e.data.json() : {};
+  e.waitUntil(
+    self.registration.showNotification(data.title || "Розклад ІТ коледжу", {
+      body: data.body || "",
+      tag: data.tag,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/badge.png",
+      lang: "uk",
+      data: { url: data.url || "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const target = new URL(e.notification.data?.url || "/", location.origin).href;
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      const open = list.find((c) => c.url === target) || list.find((c) => new URL(c.url).origin === location.origin);
+      if (open) return open.navigate(target).then((c) => (c || open).focus());
+      return self.clients.openWindow(target);
+    }),
+  );
 });

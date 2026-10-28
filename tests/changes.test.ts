@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyChanges, type ChangeDTO } from "../src/lib/changes";
+import { applyChanges, changeSummary, roomOnly, type ChangeDTO } from "../src/lib/changes";
 import type { LessonDTO } from "../src/lib/schedule";
 
 const math: LessonDTO = {
@@ -40,5 +40,22 @@ describe("applyChanges", () => {
   it("додаткова пара без основної", () => {
     const out = applyChanges([], [change({ replaces: [], pair: 5 })], (l) => l.groupId === 5);
     expect(out[0]).toMatchObject({ pair: 5, change: { kind: "added" } });
+  });
+});
+
+describe("roomOnly", () => {
+  it("та сама пара в іншій аудиторії — це зміна аудиторії", () => {
+    const c = change({ teacher: "Кузар Х.В.", teacherId: 10, room: "105" });
+    expect(roomOnly(c)).toBe(true);
+    expect(changeSummary(c)).toBe("Вища математика — ауд. 105 (замість 401)");
+  });
+
+  it("інший викладач — це заміна, а не зміна аудиторії", () => {
+    expect(roomOnly(change({}))).toBe(false);
+  });
+
+  it("скасування і додаткова пара — не зміна аудиторії", () => {
+    expect(roomOnly(change({ cancelled: true }))).toBe(false);
+    expect(roomOnly(change({ replaces: [] }))).toBe(false);
   });
 });

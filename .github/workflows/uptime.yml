@@ -1,0 +1,20 @@
+name: Перевірка роботи сайту
+
+on:
+  schedule:
+    - cron: "*/30 5-20 * * *"
+  workflow_dispatch:
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    if: vars.PUBLIC_URL != ''
+    steps:
+      - name: /api/health
+        run: |
+          for i in 1 2 3; do
+            curl -fsS --max-time 20 "${{ vars.PUBLIC_URL }}/api/health" && exit 0
+            sleep 20
+          done
+          echo "::error::Сайт розкладу не відповідає"
+          exit 1

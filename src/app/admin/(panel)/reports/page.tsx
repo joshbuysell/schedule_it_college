@@ -4,16 +4,20 @@ import { prisma } from "@/lib/db";
 import { activeSemesterId, getSettings, lessonsWhere } from "@/lib/queries";
 import { computeWorkload } from "@/lib/workload";
 import ImportPanel from "./ImportPanel";
+import Visits from "./Visits";
+import { statsSince } from "@/lib/stats";
 
 export const metadata: Metadata = { title: "Звіти та Excel" };
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
-  const [lessons, settings, semesters, active] = await Promise.all([
+  const [lessons, settings, semesters, active, stats, subscribers] = await Promise.all([
     lessonsWhere({}),
     getSettings(),
     prisma.semester.findMany({ orderBy: { id: "desc" } }),
     activeSemesterId(),
+    statsSince(30),
+    prisma.pushSub.findMany({ distinct: ["endpoint"], select: { endpoint: true } }).then((r) => r.length),
   ]);
   const rows = computeWorkload(lessons);
   const total = rows.reduce((s, r) => s + r.pairs, 0);
@@ -35,6 +39,8 @@ export default async function ReportsPage() {
           Друк в офіційному форматі
         </Link>
       </section>
+
+      <Visits stats={stats} subscribers={subscribers} />
 
       <ImportPanel semesters={semesters.map((s) => ({ id: s.id, title: s.title, active: s.id === active }))} />
 

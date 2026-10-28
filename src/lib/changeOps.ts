@@ -4,7 +4,7 @@ import { ensureRoom, ensureSubject, ensureTeacher } from "./admin";
 import { getChanges, getSettings, lessonsWhere } from "./queries";
 import { matchesWeek, weekParity, weekdayOf } from "./schedule";
 import type { ChangeInput } from "./changeInput";
-import { notifyChanges } from "./notify";
+import { notifyChanges, notifyRequestDecision } from "./notify";
 import { audit } from "./audit";
 import { changeSummary } from "./changes";
 
@@ -51,7 +51,7 @@ export async function approveChange(id: number) {
   await prisma.change.update({ where: { id }, data: { status: "approved" } });
   const [dto] = await getChanges({ id });
   await audit("change.approve", `Підтверджено заявку на ${dto.date}: ${dto.group}, ${dto.pair} пара — ${changeSummary(dto)}`);
-  await notifyChanges([dto]);
+  await Promise.all([notifyChanges([dto]), notifyRequestDecision(id, true)]);
   return dto;
 }
 

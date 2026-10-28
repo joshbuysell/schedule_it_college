@@ -6,16 +6,16 @@
   --surface-2: #f5f6fb;
   --ink: #1c1f3d;
   --ink-2: #4b5070;
-  --ink-3: #8b90a8;
+  --ink-3: #676c85;
   --line: #e2e4ef;
   --line-2: #eef0f7;
   --brand: #323a8d;
   --brand-deep: #252b6b;
   --brand-ink: #ffffff;
   --brand-soft: #eceefa;
-  --accent: #f26b1d;
+  --accent: #b34a0b;
   --accent-soft: #fff1e7;
-  --ok: #138a5a;
+  --ok: #0f7a4f;
   --warn: #c2410c;
   --danger: #d12b3a;
   --danger-soft: #fdecee;
@@ -303,4 +303,12 @@ td.pc-day span {
     box-shadow: none;
     page-break-after: always;
   }
+}
+
+.board-page {
+  animation: board-in 0.6s ease both;
+}
+@keyframes board-in {
+  from { opacity: 0; transform: translateY(0.4em); }
+  to { opacity: 1; transform: none; }
 }

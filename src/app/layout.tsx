@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Montserrat, Poppins } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "@/components/RegisterSW";
+import Track from "@/components/Track";
 
 const poppins = Poppins({ variable: "--font-poppins", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700"] });
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${poppins.variable} ${montserrat.variable} min-h-dvh antialiased`}>
         {children}
         <RegisterSW />
+        <Track />
       </body>
     </html>
   );

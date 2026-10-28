@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { CircleHelp } from "lucide-react";
 import { getSession } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 import AdminNav from "./AdminNav";
@@ -16,6 +17,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <AdminNav pending={pending} />
           <div className="ml-auto flex items-center gap-3 text-sm">
+            <Link href="/help#staff" target="_blank" title="Довідка" aria-label="Довідка" className="rounded-lg p-1.5 text-white/80 hover:bg-white/10 hover:text-white">
+              <CircleHelp className="size-5" />
+            </Link>
             <Link href="/" target="_blank" className="hidden font-medium whitespace-nowrap text-white/80 hover:text-white 2xl:block">
               Публічний сайт ↗
             </Link>

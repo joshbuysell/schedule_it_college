@@ -11,6 +11,7 @@ const ITEMS = [
   { href: "/teachers", label: "Викладачі" },
   { href: "/rooms", label: "Аудиторії" },
   { href: "/#bells", label: "Дзвінки" },
+  { href: "/help", label: "Довідка" },
   { href: "/integration", label: "Для сайту коледжу" },
 ];
 

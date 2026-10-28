@@ -47,6 +47,9 @@ export default async function Dashboard() {
         <a href="/poster?all" target="_blank" className="inline-flex items-center rounded-md border border-line bg-surface px-4 py-2.5 font-medium hover:border-brand hover:text-brand">
           QR-плакати для груп
         </a>
+        <a href="/board" target="_blank" className="inline-flex items-center rounded-md border border-line bg-surface px-4 py-2.5 font-medium hover:border-brand hover:text-brand">
+          Табло для холу
+        </a>
         <Link href="/admin/editor" className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 font-semibold text-brand-ink hover:opacity-90">
           Відкрити редактор <ArrowRight className="size-4" />
         </Link>

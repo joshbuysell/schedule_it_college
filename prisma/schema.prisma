@@ -158,3 +158,28 @@ model TelegramSub {
   @@index([groupId])
   @@index([teacherId])
 }
+
+model PushSub {
+  id        Int      @id @default(autoincrement())
+  endpoint  String
+  p256dh    String
+  auth      String
+  target    String
+  groupId   Int?
+  teacherId Int?
+  morning   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([endpoint, target])
+  @@index([groupId])
+  @@index([teacherId])
+}
+
+model PageStat {
+  day   String
+  path  String
+  count Int    @default(0)
+
+  @@id([day, path])
+  @@index([day])
+}

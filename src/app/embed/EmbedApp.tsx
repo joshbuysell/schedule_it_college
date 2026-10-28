@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { CalendarPlus, ChevronLeft, DoorOpen, GraduationCap, Maximize2, Minimize2, Search, UserRound } from "lucide-react";
+import { Bell, CalendarPlus, ChevronLeft, DoorOpen, GraduationCap, Maximize2, Minimize2, Search, UserRound } from "lucide-react";
 import Timetable, { TimetableNav, type OpenTarget } from "@/components/Timetable";
 import TodayBadge from "@/components/TodayBadge";
 import { layoutSwap, normalizeQuery, translit, type BellDTO, type LessonDTO, type Week } from "@/lib/schedule";
@@ -173,6 +173,16 @@ export default function EmbedApp({ index, bells, parity, semesterLabel, initial,
                     className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm font-semibold hover:border-brand hover:text-brand"
                   >
                     <CalendarPlus className="size-4" /> У календар
+                  </a>
+                )}
+                {selected.kind !== "room" && (
+                  <a
+                    href={`${info.href}?notify`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm font-semibold hover:border-brand hover:text-brand"
+                  >
+                    <Bell className="size-4" /> Сповіщення про заміни
                   </a>
                 )}
                 <button

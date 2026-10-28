@@ -95,6 +95,13 @@ export function MyGroupCard({ bells, parity }: { bells: BellDTO[]; parity: Exclu
         <p className="border-y border-line py-4 text-ink-2">Пар немає.</p>
       ) : (
         <table className="w-full text-[15px]">
+          <thead className="sr-only">
+            <tr>
+              <th>Пара</th>
+              <th>Заняття</th>
+              <th>Аудиторія</th>
+            </tr>
+          </thead>
           <tbody>
             {today.map((l) => {
               const b = bells.find((x) => x.pair === l.pair);

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import ScheduleShell from "@/components/ScheduleShell";
 import CalendarMenu from "@/components/CalendarMenu";
 import Timetable from "@/components/Timetable";
+import NotifyButton from "@/components/NotifyButton";
 import { prisma } from "@/lib/db";
 import { getToday, getWeekChanges, lessonsWhere } from "@/lib/queries";
 
@@ -38,7 +39,12 @@ export default async function TeacherPage({ params }: Props) {
           .filter(Boolean)
           .join(" · ")
       }
-      actions={<CalendarMenu path={`/api/v1/teachers/${teacher.id}/ics`} />}
+      actions={
+        <>
+          <NotifyButton target={`t:${teacher.id}`} teacherId={teacher.id} name={teacher.shortName} />
+          <CalendarMenu path={`/api/v1/teachers/${teacher.id}/ics`} />
+        </>
+      }
     >
       <Timetable lessons={lessons} bells={today.bells} parity={today.parity} mode="teacher" changes={changes} viewId={teacher.id} weekStart={today.weekStart} />
       {groups.length > 0 && (

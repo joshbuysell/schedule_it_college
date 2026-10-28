@@ -20,6 +20,7 @@ export default function SiteFooter({ source }: { source?: string }) {
             <li><Link href="/groups" className={link}>Групи</Link></li>
             <li><Link href="/teachers" className={link}>Викладачі</Link></li>
             <li><Link href="/#bells" className={link}>Розклад дзвінків</Link></li>
+            <li><Link href="/help" className={link}>Довідка</Link></li>
             {source && (
               <li><a href={source} target="_blank" rel="noreferrer" className={link}>Офіційний PDF</a></li>
             )}
@@ -30,8 +31,10 @@ export default function SiteFooter({ source }: { source?: string }) {
           <ul className="space-y-1.5 text-sm">
             <li><a href="https://itcollege.lviv.ua" className={link}>Сайт коледжу</a></li>
             <li><Link href="/integration" className={link}>Вбудувати на сайт</Link></li>
+            <li><Link href="/board" className={link}>Табло для холу</Link></li>
             <li><Link href="/api/v1" className={link}>API</Link></li>
             <li><Link href="/admin" className={link}>Вхід для навчальної частини</Link></li>
+            <li><Link href="/cabinet" className={link}>Кабінет викладача</Link></li>
           </ul>
         </div>
       </div>

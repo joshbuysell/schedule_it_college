@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { describeLesson, type ChangeDTO } from "@/lib/changes";
+import { describeLesson, roomOnly, type ChangeDTO } from "@/lib/changes";
 import { formatDate } from "@/lib/schedule";
 
 export default function ChangesToday({ changes, today }: { changes: ChangeDTO[]; today: string }) {
@@ -16,6 +16,13 @@ export default function ChangesToday({ changes, today }: { changes: ChangeDTO[];
               {d === today ? "Сьогодні" : "Наступний робочий день"}, {formatDate(d, { weekday: "long", day: "numeric", month: "long" })}
             </p>
             <table className="w-full text-[15px]">
+              <thead className="sr-only">
+                <tr>
+                  <th>Група</th>
+                  <th>Пара</th>
+                  <th>Зміна</th>
+                </tr>
+              </thead>
               <tbody>
                 {changes
                   .filter((c) => c.date === d)
@@ -31,6 +38,11 @@ export default function ChangesToday({ changes, today }: { changes: ChangeDTO[];
                         {c.cancelled ? (
                           <span>
                             <span className="text-danger">Скасовано:</span> {c.replaces.map((r) => r.subject).join(", ") || "пара"}
+                          </span>
+                        ) : roomOnly(c) ? (
+                          <span>
+                            <span className="text-accent">Інша аудиторія:</span> {c.subject} — ауд. {c.room ?? "—"}
+                            <span className="text-ink-3"> (замість {c.replaces.map((r) => r.room ?? "—").join(", ")})</span>
                           </span>
                         ) : (
                           <span>

@@ -5,6 +5,7 @@ import { bad, getSession } from "@/lib/admin";
 import { changeInput } from "@/lib/changeInput";
 import { approveChange, saveChange } from "@/lib/changeOps";
 import { audit } from "@/lib/audit";
+import { notifyRequestDecision } from "@/lib/notify";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -20,6 +21,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
     if (st.data.status === "approved") return NextResponse.json({ change: await approveChange(id) });
     const c = await prisma.change.update({ where: { id }, data: { status: "rejected" }, include: { group: true } });
     await audit("change.reject", `Відхилено заявку на ${c.date}: ${c.group.name}, ${c.pair} пара`);
+    await notifyRequestDecision(id, false);
     return NextResponse.json({ ok: true });
   }
 

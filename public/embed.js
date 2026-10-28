@@ -73,7 +73,31 @@
     });
   }
 
+  function mountChanges(host) {
+    if (host.getAttribute("data-itc-mounted")) return;
+    host.setAttribute("data-itc-mounted", "1");
+    var params = [];
+    if (host.getAttribute("data-link")) params.push("link=" + encodeURIComponent(host.getAttribute("data-link")));
+    if (host.getAttribute("data-limit")) params.push("limit=" + encodeURIComponent(host.getAttribute("data-limit")));
+    var iframe = document.createElement("iframe");
+    iframe.src = origin + "/embed/changes" + (params.length ? "?" + params.join("&") : "");
+    iframe.title = "Зміни в розкладі";
+    iframe.setAttribute("scrolling", "no");
+    iframe.style.cssText = "display:block;width:100%;height:160px;border:0;overflow:hidden;background:transparent";
+    host.innerHTML = "";
+    host.appendChild(iframe);
+    window.addEventListener("message", function (e) {
+      if (e.origin !== origin || e.source !== iframe.contentWindow) return;
+      var d = e.data || {};
+      if (d.source === "itc-schedule" && d.type === "height" && d.height > 0) iframe.style.height = d.height + "px";
+    });
+  }
+
   function start() {
+    var widgets = document.querySelectorAll("#itc-changes, [data-itc-changes]");
+    for (var j = 0; j < widgets.length; j++) mountChanges(widgets[j]);
+    if (widgets.length && !document.querySelector("#itc-schedule, [data-itc-schedule]")) return;
+
     var hosts = document.querySelectorAll("#itc-schedule, [data-itc-schedule]");
     if (!hosts.length && script.parentNode && script.parentNode !== document.head) {
       var div = document.createElement("div");

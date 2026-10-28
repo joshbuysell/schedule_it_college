@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getChanges, getToday, lessonsWhere } from "@/lib/queries";
 import { buildCalendar, calendarResponse } from "@/lib/ics";
+import { hit } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
 
@@ -24,5 +25,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ name: st
     anchor: today.settings.numeratorAnchor,
     semesterEnd: today.settings.semesterEnd,
   });
+  await hit(`ics:g:${group.name}`);
   return calendarResponse(body, `schedule-${group.name}.ics`, new URL(req.url).searchParams.has("download"));
 }

@@ -96,6 +96,8 @@ export default function Search({ index, size = "hero", autoFocus = false }: { in
           placeholder={hero ? "Група, прізвище викладача або аудиторія" : "Пошук групи чи викладача"}
           className={clsx("w-full bg-transparent outline-none placeholder:text-ink-3", hero ? "text-[17px]" : "text-sm")}
           aria-label="Пошук розкладу"
+          spellCheck={false}
+          autoComplete="off"
           role="combobox"
           aria-controls="search-results"
           aria-expanded={open && hits.length > 0}

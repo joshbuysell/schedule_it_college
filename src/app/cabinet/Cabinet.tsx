@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
+import NotifyButton from "@/components/NotifyButton";
 import { changeSummary, type ChangeDTO } from "@/lib/changes";
 import { DAYS_SHORT, addDays, formatDate, matchesWeek, weekParity, weekdayOf, type BellDTO, type LessonDTO } from "@/lib/schedule";
 
@@ -78,9 +79,12 @@ export default function Cabinet({ teacher, lessons, changes, own, bells, anchor,
           <p className="text-sm text-ink-3">Вітаємо,</p>
           <h1 className="text-2xl font-semibold">{teacher.name}</h1>
         </div>
-        <Link href={`/teacher/${teacher.id}`} className="text-sm text-brand hover:underline">
-          Мій розклад на тиждень →
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href={`/teacher/${teacher.id}`} className="text-sm text-brand hover:underline">
+            Мій розклад на тиждень →
+          </Link>
+          <NotifyButton target={`t:${teacher.id}`} teacherId={teacher.id} name={teacher.short} />
+        </div>
       </div>
 
       <div className="mt-5 grid grid-cols-5 gap-1.5">

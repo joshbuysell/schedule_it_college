@@ -27,7 +27,7 @@ export default function CalendarMenu({ path }: { path: string }) {
         <CalendarPlus className="size-4" /> У календар
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-72 overflow-hidden rounded-md border border-line bg-surface shadow-lg">
+        <div className="absolute right-0 top-full z-50 mt-1 w-72 overflow-hidden rounded-md border border-line bg-surface shadow-lg max-sm:fixed max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:shadow-2xl">
           <p className="border-b border-line px-3 py-2 text-xs text-ink-3">Підписка оновлюється сама, включно із замінами.</p>
           <a className={item} href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`} target="_blank" rel="noreferrer">
             Google Календар

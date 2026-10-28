@@ -5,6 +5,7 @@ import Search from "@/components/Search";
 import TodayBadge from "@/components/TodayBadge";
 import GroupMatrix from "@/components/GroupMatrix";
 import { MyGroupCard } from "@/components/MyGroup";
+import GettingStarted from "@/components/GettingStarted";
 import { getChanges, getSearchIndex, getToday } from "@/lib/queries";
 import ChangesToday from "@/components/ChangesToday";
 import { addDays, weekdayOf } from "@/lib/schedule";
@@ -33,6 +34,7 @@ export default async function Home() {
           </div>
         </section>
 
+        <GettingStarted />
         <MyGroupCard bells={today.bells} parity={today.parity} />
         <ChangesToday changes={changes} today={today.ymd} />
 
@@ -50,6 +52,12 @@ export default async function Home() {
           <div>
             <h2 className="mb-3 text-xl font-semibold">Розклад дзвінків</h2>
             <table className="w-full text-[15px]">
+              <thead className="sr-only">
+                <tr>
+                  <th>Пара</th>
+                  <th>Час</th>
+                </tr>
+              </thead>
               <tbody>
                 {today.bells.map((b) => (
                   <tr key={b.pair} className="border-b border-line">
@@ -74,10 +82,17 @@ export default async function Home() {
                 сьогоднішні пари.
               </li>
               <li>
-                <b className="text-ink">Календар у телефоні.</b> Кнопка «У календар» завантажує розклад групи для Google чи Apple
-                Календаря.
+                <b className="text-ink">Сповіщення про заміни.</b> Кнопка «Сповіщення» на сторінці групи — і повідомлення про зміну пари
+                прийде на телефон.
+              </li>
+              <li>
+                <b className="text-ink">Календар у телефоні.</b> «У календар» підписує Google чи Apple Календар на розклад групи разом
+                із замінами.
               </li>
             </ul>
+            <Link href="/help" className="mt-4 inline-block text-sm font-medium text-brand hover:underline">
+              Уся довідка →
+            </Link>
           </div>
         </section>
       </main>

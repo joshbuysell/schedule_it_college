@@ -13,6 +13,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: base, changeFrequency: "daily", priority: 1 },
     { url: `${base}/groups` },
     { url: `${base}/teachers` },
+    { url: `${base}/rooms` },
+    { url: `${base}/help` },
     ...groups.map((g) => ({ url: `${base}/group/${encodeURIComponent(g.name)}`, lastModified: g.updatedAt })),
     ...teachers.map((t) => ({ url: `${base}/teacher/${t.id}` })),
   ];

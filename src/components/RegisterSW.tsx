@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { SW_URL } from "@/lib/pushClient";
 
 export default function RegisterSW() {
   useEffect(() => {
-    if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register(SW_URL).catch(() => {});
   }, []);
   return null;
 }

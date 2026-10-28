@@ -1,8 +1,8 @@
 import "server-only";
 import { prisma } from "./db";
-import { applyChanges, changeSummary, type ChangeDTO } from "./changes";
-import { getBells, getChanges, getSettings, lessonsWhere } from "./queries";
-import { formatDate, matchesWeek, normalizeQuery, weekParity, weekdayOf, layoutSwap, translit } from "./schedule";
+import { changeSummary, type ChangeDTO } from "./changes";
+import { dayPlan, isStruck, type Target } from "./daily";
+import { formatDate, normalizeQuery, layoutSwap, translit } from "./schedule";
 
 const API = "https://api.telegram.org";
 
@@ -25,28 +25,17 @@ export async function send(chatId: string, text: string) {
   return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true });
 }
 
-type Target = { kind: "group"; id: number; name: string } | { kind: "teacher"; id: number; name: string };
-
 export async function dayText(target: Target, date: string) {
-  const [settings, bells] = await Promise.all([getSettings(), getBells()]);
-  const day = weekdayOf(date);
+  const { day, parity, bells, lessons } = await dayPlan(target, date);
   const title = `<b>${esc(target.name)}</b> · ${formatDate(date, { weekday: "long", day: "numeric", month: "long" })}`;
   if (day > 5) return `${title}\nВихідний 🙂`;
-
-  const parity = weekParity(settings.numeratorAnchor, date, day);
-  const where = target.kind === "group" ? { groupId: target.id, day } : { teacherId: target.id, day };
-  const [base, changes] = await Promise.all([lessonsWhere(where), getChanges({ status: "approved", date })]);
-  const inView = (l: { groupId: number; teacherId: number | null }) => (target.kind === "group" ? l.groupId === target.id : l.teacherId === target.id);
-  const list = applyChanges(base.filter((l) => matchesWeek(l.week, parity)), changes, inView).sort((a, b) => a.pair - b.pair || a.subgroup - b.subgroup);
-
-  if (!list.length) return `${title}\nПар немає.`;
-  const lines = list.map((l) => {
+  if (!lessons.length) return `${title}\nПар немає.`;
+  const lines = lessons.map((l) => {
     const b = bells.find((x) => x.pair === l.pair);
     const who = target.kind === "group" ? l.teacher : l.group;
-    const struck = l.change?.kind === "cancelled" || l.change?.kind === "taken";
     const body = [l.subject, who, l.room && `ауд. ${l.room}`, l.subgroup ? `${l.subgroup} пгр` : null].filter(Boolean).map((x) => esc(String(x))).join(" · ");
     const mark = l.change ? (l.change.kind === "cancelled" ? " ❌ скасовано" : l.change.kind === "taken" ? " ↪︎ заміна" : " 🔄 заміна") : "";
-    return `${l.pair}. ${b?.start ?? ""} ${struck ? `<s>${body}</s>` : body}${mark}${l.change?.note ? `\n   <i>${esc(l.change.note)}</i>` : ""}`;
+    return `${l.pair}. ${b?.start ?? ""} ${isStruck(l) ? `<s>${body}</s>` : body}${mark}${l.change?.note ? `\n   <i>${esc(l.change.note)}</i>` : ""}`;
   });
   return `${title} · ${parity === "num" ? "чисельник" : "знаменник"}\n\n${lines.join("\n")}`;
 }

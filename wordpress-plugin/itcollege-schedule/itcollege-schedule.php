@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Розклад ІТ коледжу
  * Description:       Вбудовує живий розклад занять (групи, викладачі, аудиторії) на сторінки сайту. Шорткод: [itcollege_schedule] або [itcollege_schedule group="КІ-21"].
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Фаховий коледж інформаційних технологій НУ «Львівська політехніка»
@@ -30,7 +30,7 @@ function itc_schedule_shortcode($atts) {
             : '';
     }
 
-    wp_enqueue_script('itc-schedule-embed', $base . '/embed.js', [], '1.0.0', ['strategy' => 'async', 'in_footer' => true]);
+    wp_enqueue_script('itc-schedule-embed', $base . '/embed.js', [], '1.1.0', ['strategy' => 'async', 'in_footer' => true]);
 
     $group = sanitize_text_field($atts['group']);
     $fallback = esc_url($base . '/embed' . ($group ? '?select=' . rawurlencode('g:' . $group) : ''));
@@ -42,6 +42,25 @@ function itc_schedule_shortcode($atts) {
     );
 }
 add_shortcode('itcollege_schedule', 'itc_schedule_shortcode');
+
+function itc_schedule_changes_shortcode($atts) {
+    $atts = shortcode_atts(['link' => '', 'limit' => ''], $atts, 'itcollege_schedule_changes');
+    $base = itc_schedule_base_url();
+    if (!$base) {
+        return '';
+    }
+
+    wp_enqueue_script('itc-schedule-embed', $base . '/embed.js', [], '1.1.0', ['strategy' => 'async', 'in_footer' => true]);
+
+    $link = esc_url($atts['link']);
+    $limit = absint($atts['limit']);
+    return sprintf(
+        '<div class="itc-schedule-changes" data-itc-changes%s%s></div>',
+        $link ? ' data-link="' . esc_attr($link) . '"' : '',
+        $limit ? ' data-limit="' . esc_attr($limit) . '"' : ''
+    );
+}
+add_shortcode('itcollege_schedule_changes', 'itc_schedule_changes_shortcode');
 
 function itc_schedule_settings_init() {
     register_setting('itc_schedule', ITC_SCHEDULE_OPTION, [
@@ -82,6 +101,9 @@ function itc_schedule_settings_page() {
         <h2>Як використовувати</h2>
         <p>Додайте на сторінку «Розклад» блок «Шорткод» з текстом <code>[itcollege_schedule]</code>.</p>
         <p>Для однієї групи: <code>[itcollege_schedule group="КІ-21"]</code>.</p>
+        <p>Блок «Зміни в розкладі» для головної сторінки чи бічної панелі:
+            <code>[itcollege_schedule_changes link="<?php echo esc_html(home_url('/schedule/')); ?>"]</code>.
+            Параметр <code>link</code> — сторінка з розкладом, куди ведуть посилання на групи.</p>
         <?php if ($url) : ?>
             <p><a class="button" href="<?php echo esc_url(untrailingslashit($url) . '/integration'); ?>" target="_blank" rel="noopener">Перевірити віджет</a></p>
         <?php endif; ?>

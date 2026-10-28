@@ -79,8 +79,13 @@ export function applyChanges(base: LessonDTO[], changes: ChangeDTO[], inView: (l
   return result.filter((l) => !hidden.has(l.id)).sort((a, b) => a.day - b.day || a.pair - b.pair || a.subgroup - b.subgroup);
 }
 
+export function roomOnly(c: ChangeDTO) {
+  return !c.cancelled && c.replaces.length > 0 && c.replaces.every((r) => r.subject === c.subject && r.teacher === c.teacher && r.room !== c.room);
+}
+
 export function changeSummary(c: ChangeDTO) {
   if (c.cancelled) return `${c.replaces.map((r) => r.subject).join(", ") || "Пара"} — скасовано`;
+  if (roomOnly(c)) return `${c.subject} — ${c.room ? `ауд. ${c.room}` : "без аудиторії"} (замість ${c.replaces.map((r) => r.room ?? "—").join(", ")})`;
   const now = describeLesson(c);
   return c.replaces.length ? `${now} (замість: ${c.replaces.map(describeLesson).join("; ")})` : `${now} (додаткова пара)`;
 }
